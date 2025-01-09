@@ -13,12 +13,12 @@ const RoleToPermission = sequelize.define(
             primaryKey: true
         },
         roleId: {
-            type: DataTypes.BIGINT,
+            type: DataTypes.UUID,
             allowNull: false,
             primaryKey: true
         },
         permissionId: {
-            type: DataTypes.BIGINT,
+            type: DataTypes.UUID,
             allowNull: false,
             primaryKey: true
         }

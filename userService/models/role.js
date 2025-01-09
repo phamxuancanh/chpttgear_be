@@ -1,13 +1,12 @@
 const { DataTypes } = require('sequelize')
 const sequelize = require('./init')
-const { v4: uuidv4 } = require('uuid')
 
 const Role = sequelize.define(
   'Role',
   {
     id: {
       type: DataTypes.UUID,
-      defaultValue: uuidv4,
+      defaultValue: DataTypes.UUIDV4,
       allowNull: false,
       unique: true,
       primaryKey: true

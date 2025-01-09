@@ -23,7 +23,11 @@
     "nodemailer": "^6.9.15",
     "jsonwebtoken": "^9.0.2",
     "firebase": "^10.13.1",
-    "firebase-admin": "^12.4.0"
+    "firebase-admin": "^12.4.0",
+    "env-cmd": "^10.1.0",
+    "mysql2": "^2.3.3",
+    "cors": "^2.8.5",
+    "morgan": "^1.10.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"
