@@ -1,11 +1,11 @@
 const { Sequelize } = require('sequelize')
 
 const databaseInfo = {
-  host: process.env.DATABASE_HOST,
-  port: process.env.DATABASE_PORT,
-  user: process.env.DATABASE_USER,
-  password: process.env.DATABASE_PASSWORD,
-  database: process.env.DATABASE_DB
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME
 }
 
 const sequelize = new Sequelize(
@@ -14,10 +14,16 @@ const sequelize = new Sequelize(
   databaseInfo.password,
   {
     host: databaseInfo.host,
-    dialect: 'mysql',
+    dialect: 'postgres',
     port: databaseInfo.port,
     timezone: '+07:00',
-    logging: false
+    logging: false,
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false
+      }
+    }
   }
 )
 
