@@ -1,0 +1,5 @@
+const sequelize = require('./init')
+const User = require('./user')
+const Permission = require('./permission')
+const Role = require('./role')
+const RoleToPermission = require('./role_to_permission')
