@@ -2,7 +2,6 @@ const express = require('express');
 const app = express();
 const PORT = 6868;
 
-// Import và sử dụng middleware
 require('./middlewares/proxy')(app);
 
 app.get('/', (req, res) => {
