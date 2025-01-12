@@ -1,13 +1,20 @@
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const services = require('../config/services');
 const rateLimitAndTimeout = require('./rateLimit')
-
+const verifyAccessToken = require('./authentication')
 module.exports = (app) => {
     const RATE_LIMIT = 100; // request per minute
     const TIMEOUT = 10 * 1000; // 10 seconds
-
+    // proxy cho user service
     app.use(
         '/users',
+        (req, res, next) => {
+            // ko fai login hay register thi phai verify token
+            if (!['/users/signUp', '/users/signIn'].includes(req.path)) {
+                return verifyAccessToken(req, res, next);
+            }
+            next();
+        },
         rateLimitAndTimeout('/users', RATE_LIMIT, TIMEOUT),
         createProxyMiddleware({
             target: services.userServiceUrl,
@@ -30,17 +37,20 @@ module.exports = (app) => {
     // Proxy cho Inventory Service
     app.use(
         '/inventory',
-        rateLimitAndTimeout('/inventory', RATE_LIMIT, TIMEOUT),
+        verifyAccessToken,
+        rateLimitAndTimeout('/inventory', RATE_LIMIT, TIMEOUT), // Middleware giới hạn và timeout
         createProxyMiddleware({
             target: services.inventoryServiceUrl,
             changeOrigin: true,
             pathRewrite: { '^/inventory': '' },
         })
-    );
+    )
+    
 
     // Proxy cho Cart Service
     app.use(
         '/cart',
+        verifyAccessToken,
         rateLimitAndTimeout('/cart', RATE_LIMIT, TIMEOUT),
         createProxyMiddleware({
             target: services.cartServiceUrl,
@@ -52,6 +62,7 @@ module.exports = (app) => {
     // Proxy cho Order Service
     app.use(
         '/orders',
+        verifyAccessToken,
         rateLimitAndTimeout('/orders', RATE_LIMIT, TIMEOUT),
         createProxyMiddleware({
             target: services.orderServiceUrl,
@@ -63,6 +74,7 @@ module.exports = (app) => {
     // Proxy cho Payment Service
     app.use(
         '/payments',
+        verifyAccessToken,
         rateLimitAndTimeout('/payments', RATE_LIMIT, TIMEOUT),
         createProxyMiddleware({
             target: services.paymentServiceUrl,
@@ -74,6 +86,7 @@ module.exports = (app) => {
     // Proxy cho Shipping Service
     app.use(
         '/shipping',
+        verifyAccessToken,
         rateLimitAndTimeout('/shipping', RATE_LIMIT, TIMEOUT),
         createProxyMiddleware({
             target: services.shippingServiceUrl,
@@ -85,6 +98,7 @@ module.exports = (app) => {
     // Proxy cho Review & Rating Service
     app.use(
         '/reviews',
+        verifyAccessToken,
         rateLimitAndTimeout('/reviews', RATE_LIMIT, TIMEOUT),
         createProxyMiddleware({
             target: services.reviewRatingServiceUrl,
@@ -96,6 +110,7 @@ module.exports = (app) => {
     // Proxy cho Notification Service
     app.use(
         '/notifications',
+        verifyAccessToken,
         rateLimitAndTimeout('/notifications', RATE_LIMIT, TIMEOUT),
         createProxyMiddleware({
             target: services.notificationServiceUrl,
@@ -107,6 +122,7 @@ module.exports = (app) => {
     // Proxy cho Recommendation Service
     app.use(
         '/recommendations',
+        verifyAccessToken,
         rateLimitAndTimeout('/recommendations', RATE_LIMIT, TIMEOUT),
         createProxyMiddleware({
             target: services.recommendationServiceUrl,
