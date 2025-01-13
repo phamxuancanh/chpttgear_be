@@ -187,8 +187,7 @@ const verifyEmail = async (req, res, next) => {
         }
         user.emailVerified = true
         await user.save()
-        // const accessToken = jwt.sign({ id: user.id, email: user.email }, 'your-secret-key', { expiresIn: '1h' })
-        const accessToken = await signAccessToken({ id: user.id, email: user.email })
+        const accessToken = await signAccessToken(user.id)
 
         return res.status(200).json({ success: true, message: 'Email verified successfully.', accessToken })
     } catch (error) {
