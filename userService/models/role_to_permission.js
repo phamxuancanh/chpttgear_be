@@ -13,7 +13,7 @@ const RoleToPermission = sequelize.define(
             primaryKey: true
         },
         roleId: {
-            type: DataTypes.UUID,
+            type: DataTypes.INTEGER,
             allowNull: false,
             primaryKey: true
         },

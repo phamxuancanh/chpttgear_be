@@ -2,132 +2,136 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 const services = require('../config/services');
 const rateLimitAndTimeout = require('./rateLimit')
 const verifyAccessToken = require('./authentication')
+const API_PREFIX = require('../utils/utils').API_PREFIX
 module.exports = (app) => {
-    const RATE_LIMIT = 100; // request per minute
-    const TIMEOUT = 10 * 1000; // 10 seconds
-    // proxy cho user service
+    const RATE_LIMIT = 100 // requests per minute
+    const TIMEOUT = 10 * 1000 // 10 seconds
+
+    // Proxy for User Service
     app.use(
-        '/users',
+        `${API_PREFIX}/users`,
         (req, res, next) => {
-            // ko fai login hay register thi phai verify token
-            if (!['/users/signUp', '/users/signIn'].includes(req.path)) {
-                return verifyAccessToken(req, res, next);
+            console.log('Proxying request to user service:', req);
+
+            const pathWithoutPrefix = req.path.replace(`${API_PREFIX}/users`, '')
+            console.log(pathWithoutPrefix)
+            if (!['/signUp', '/signIn'].includes(pathWithoutPrefix)) {
+                return verifyAccessToken(req, res, next)
             }
-            next();
+            next()
         },
         rateLimitAndTimeout('/users', RATE_LIMIT, TIMEOUT),
         createProxyMiddleware({
-            target: services.userServiceUrl,
+            target: services.userServiceUrl+`${API_PREFIX}/users`,
             changeOrigin: true,
-            pathRewrite: { '^/users': '' },
-        })
-    );
-
-    // Proxy cho Product Service
-    app.use(
-        '/products',
-        rateLimitAndTimeout('/products', RATE_LIMIT, TIMEOUT),
-        createProxyMiddleware({
-            target: services.productServiceUrl,
-            changeOrigin: true,
-            pathRewrite: { '^/products': '' },
-        })
-    );
-
-    // Proxy cho Inventory Service
-    app.use(
-        '/inventory',
-        verifyAccessToken,
-        rateLimitAndTimeout('/inventory', RATE_LIMIT, TIMEOUT), // Middleware giới hạn và timeout
-        createProxyMiddleware({
-            target: services.inventoryServiceUrl,
-            changeOrigin: true,
-            pathRewrite: { '^/inventory': '' },
+            pathRewrite: { [`^${API_PREFIX}/users`]: '' },
         })
     )
-    
 
-    // Proxy cho Cart Service
+    // Proxy for Product Service
     app.use(
-        '/cart',
+        `${API_PREFIX}/products`,
+        rateLimitAndTimeout('/products', RATE_LIMIT, TIMEOUT),
+        createProxyMiddleware({
+            target: services.productServiceUrl+`${API_PREFIX}/products`,
+            changeOrigin: true,
+            pathRewrite: { [`^${API_PREFIX}/products`]: '' },
+        })
+    )
+
+    // Proxy for Inventory Service
+    app.use(
+        `${API_PREFIX}/inventory`,
+        verifyAccessToken,
+        rateLimitAndTimeout('/inventory', RATE_LIMIT, TIMEOUT),
+        createProxyMiddleware({
+            target: services.inventoryServiceUrl+`${API_PREFIX}/inventory`,
+            changeOrigin: true,
+            pathRewrite: { [`^${API_PREFIX}/inventory`]: '' },
+        })
+    )
+
+    // Proxy for Cart Service
+    app.use(
+        `${API_PREFIX}/cart`,
         verifyAccessToken,
         rateLimitAndTimeout('/cart', RATE_LIMIT, TIMEOUT),
         createProxyMiddleware({
-            target: services.cartServiceUrl,
+            target: services.cartServiceUrl+`${API_PREFIX}/cart`,
             changeOrigin: true,
-            pathRewrite: { '^/cart': '' },
+            pathRewrite: { [`^${API_PREFIX}/cart`]: '' },
         })
-    );
+    )
 
-    // Proxy cho Order Service
+    // Proxy for Order Service
     app.use(
-        '/orders',
+        `${API_PREFIX}/orders`,
         verifyAccessToken,
         rateLimitAndTimeout('/orders', RATE_LIMIT, TIMEOUT),
         createProxyMiddleware({
-            target: services.orderServiceUrl,
+            target: services.orderServiceUrl+`${API_PREFIX}/orders`,
             changeOrigin: true,
-            pathRewrite: { '^/orders': '' },
+            pathRewrite: { [`^${API_PREFIX}/orders`]: '' },
         })
-    );
+    )
 
-    // Proxy cho Payment Service
+    // Proxy for Payment Service
     app.use(
-        '/payments',
+        `${API_PREFIX}/payments`,
         verifyAccessToken,
         rateLimitAndTimeout('/payments', RATE_LIMIT, TIMEOUT),
         createProxyMiddleware({
             target: services.paymentServiceUrl,
             changeOrigin: true,
-            pathRewrite: { '^/payments': '' },
+            pathRewrite: { [`^${API_PREFIX}/payments`]: '' },
         })
-    );
+    )
 
-    // Proxy cho Shipping Service
+    // Proxy for Shipping Service
     app.use(
-        '/shipping',
+        `${API_PREFIX}/shipping`,
         verifyAccessToken,
         rateLimitAndTimeout('/shipping', RATE_LIMIT, TIMEOUT),
         createProxyMiddleware({
-            target: services.shippingServiceUrl,
+            target: services.shippingServiceUrl+`${API_PREFIX}/shipping`,
             changeOrigin: true,
-            pathRewrite: { '^/shipping': '' },
+            pathRewrite: { [`^${API_PREFIX}/shipping`]: '' },
         })
-    );
+    )
 
-    // Proxy cho Review & Rating Service
+    // Proxy for Review & Rating Service
     app.use(
-        '/reviews',
+        `${API_PREFIX}/reviews`,
         verifyAccessToken,
         rateLimitAndTimeout('/reviews', RATE_LIMIT, TIMEOUT),
         createProxyMiddleware({
             target: services.reviewRatingServiceUrl,
             changeOrigin: true,
-            pathRewrite: { '^/reviews': '' },
+            pathRewrite: { [`^${API_PREFIX}/reviews`]: '' },
         })
-    );
+    )
 
-    // Proxy cho Notification Service
+    // Proxy for Notification Service
     app.use(
-        '/notifications',
+        `${API_PREFIX}/notifications`,
         verifyAccessToken,
         rateLimitAndTimeout('/notifications', RATE_LIMIT, TIMEOUT),
         createProxyMiddleware({
-            target: services.notificationServiceUrl,
+            target: services.notificationServiceUrl+`${API_PREFIX}/notifications`,
             changeOrigin: true,
-            pathRewrite: { '^/notifications': '' },
+            pathRewrite: { [`^${API_PREFIX}/notifications`]: '' },
         })
-    );
+    )
 
-    // Proxy cho Recommendation Service
+    // Proxy for Recommendation Service
     app.use(
-        '/recommendations',
+        `${API_PREFIX}/recommendations`,
         verifyAccessToken,
         rateLimitAndTimeout('/recommendations', RATE_LIMIT, TIMEOUT),
         createProxyMiddleware({
-            target: services.recommendationServiceUrl,
+            target: services.recommendationServiceUrl+`${API_PREFIX}/recommendations`,
             changeOrigin: true,
-            pathRewrite: { '^/recommendations': '' },
+            pathRewrite: { [`^${API_PREFIX}/recommendations`]: '' },
         })
-    );
-};
+    )
+}
