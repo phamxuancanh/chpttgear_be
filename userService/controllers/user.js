@@ -131,7 +131,7 @@ const signIn = async (req, res, next) => {
 const signUp = async (req, res, next) => {
     console.log('SIGN UP')
     try {
-        const { firstName, lastName, email, password } = req.body.data
+        const { firstName, lastName, username, email, password } = req.body.data
         const userByEmail = await models.User.findOne({ where: { email } })
         if (userByEmail) {
             return res.status(401).json({ code: 401, message: 'Email is already registered.' })
@@ -140,6 +140,7 @@ const signUp = async (req, res, next) => {
         const newUser = await models.User.create({
             firstName,
             lastName,
+            username,
             password: hashedPassword,
             email,
             type: 'local',
