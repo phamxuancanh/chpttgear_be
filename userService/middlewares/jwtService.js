@@ -3,29 +3,31 @@ const crypto = require('crypto')
 const { models } = require('../models')
 
 const signAccessToken = async (payload) => {
-  const secret = process.env.ACCESS_TOKEN_SECRET
+  const secret = process.env.ACCESS_TOKEN_SECRET;
   const options = {
     expiresIn: '5h'
-  }
+  };
+  console.log('payload', payload);
+  const userId = payload.userId;
   try {
     const token = await new Promise((resolve, reject) => {
-      JWT.sign(userId, secret, options, (err, token) => {
-        if (err) return reject(err)
-        resolve(token)
-      })
-    })
-    console.log('userId', payload.userId)
-    const user = await models.User.findByPk(payload.userId)
-    user.accessToken = token
-    user.expireAccessToken = new Date(Date.now() + 5 * 60 * 60 * 1000) //5h
-    await user.save()
+      JWT.sign({ userId }, secret, options, (err, token) => {
+        if (err) return reject(err);
+        resolve(token);
+      });
+    });
+    console.log('userId', userId);
+    const user = await models.User.findByPk(userId);
+    user.accessToken = token;
+    user.expireAccessToken = new Date(Date.now() + 5 * 60 * 60 * 1000); // 5h
+    await user.save();
 
-    return token
+    return token;
   } catch (error) {
-    console.log(error)
-    throw new Error('Error signing access token')
+    console.log(error);
+    throw new Error('Error signing access token');
   }
-}
+};
 
 const verifyAccessToken = (req, res, next) => {
   const authHeader = req.headers.authorization

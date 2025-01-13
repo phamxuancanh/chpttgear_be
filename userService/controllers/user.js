@@ -187,7 +187,7 @@ const verifyEmail = async (req, res, next) => {
         }
         user.emailVerified = true
         await user.save()
-        const accessToken = await signAccessToken(user.id)
+        const accessToken = await signAccessToken({ userId: user.id })
 
         return res.status(200).json({ success: true, message: 'Email verified successfully.', accessToken })
     } catch (error) {
