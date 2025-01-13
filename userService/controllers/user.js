@@ -1,6 +1,5 @@
 const { models } = require('../models')
 const CryptoJS = require('crypto-js')
-const axios = require('axios')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const nodemailer = require('nodemailer')
@@ -13,7 +12,6 @@ const {
     signRefreshToken,
     verifyRefreshToken
 } = require('../middlewares/jwtService')
-const CryptoJS = require('crypto-js')
 const admin = require('../config/firebase-admin-setup')
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -131,6 +129,7 @@ const signIn = async (req, res, next) => {
     }
 }
 const signUp = async (req, res, next) => {
+    console.log('SIGN UP')
     try {
         const { firstName, lastName, email, password } = req.body.data
         const userByEmail = await models.User.findOne({ where: { email } })

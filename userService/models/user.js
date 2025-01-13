@@ -69,7 +69,7 @@ const User = sequelize.define(
             defaultValue: false
         },
         roleId: {
-            type: DataTypes.UUID,
+            type: DataTypes.INTEGER,
             allowNull: false,
         },
         score: {

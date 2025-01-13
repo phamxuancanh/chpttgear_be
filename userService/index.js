@@ -7,10 +7,11 @@ const cookieParser = require('cookie-parser')
 const { sequelize } = require('./models')
 const seedDatabase = require('./seeds/index')
 const { API_PREFIX } = require('./utils')
+const IndexRouter = require('./routes/index')
 
 const app = express()
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: '*',
     credentials: true
 }))
 
@@ -23,6 +24,7 @@ app.use(morgan('combined'))
 app.use(express.json({ limit: '50mb' }))
 
 app.use('/static', express.static(path.join(__dirname, 'public')))
+app.use('/', IndexRouter)
 
 async function startServer() {
     try {
