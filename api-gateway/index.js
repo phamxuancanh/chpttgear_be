@@ -1,10 +1,17 @@
 const express = require('express');
+const cors = require('cors');
+
 const app = express();
 const PORT = 6868;
-const cors = require('cors');
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // Nguồn gốc được phép
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    next();
+});
+app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 require('./middlewares/proxy')(app);
 
-app.use(cors({ origin: '*', credentials: true }));
 app.get('/', (req, res) => {
     res.send('API Gateway đang hoạt động');
 });

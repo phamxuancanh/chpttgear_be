@@ -11,11 +11,8 @@ module.exports = (app) => {
     app.use(
         `${API_PREFIX}/users`,
         (req, res, next) => {
-            console.log('Proxying request to user service:', req);
-
             const pathWithoutPrefix = req.path.replace(`${API_PREFIX}/users`, '')
-            console.log(pathWithoutPrefix)
-            if (!['/signUp', '/signIn'].includes(pathWithoutPrefix)) {
+            if (!['/signUp', '/signIn', '/verifyEmail', '/google'].includes(pathWithoutPrefix)) {
                 return verifyAccessToken(req, res, next)
             }
             next()

@@ -22,6 +22,7 @@ const transporter = nodemailer.createTransport({
 })
 const verifyToken = async (req, res) => {
     try {
+        console.log('verifyToken');
         const { token } = req.body;
 
         if (!token) {
@@ -47,14 +48,14 @@ const verifyToken = async (req, res) => {
 };
 const signIn = async (req, res, next) => {
     try {
-        const { email, password, rememberChecked } = req.body.data
-        if (!email || !password) {
+        const { username, password } = req.body.data
+        if (!username || !password) {
             return res.status(400).json({
                 code: 400,
                 message: 'Email and password are required.'
             })
         }
-        const user = await models.User.findOne({ where: { email } })
+        const user = await models.User.findOne({ where: { username } })
         if (!user) {
             return res.status(401).json({
                 code: 401,
@@ -87,17 +88,17 @@ const signIn = async (req, res, next) => {
             })
         }
 
-        const accessToken = await signAccessToken(user.id)
+        const accessToken = await signAccessToken({ userId: user.id })
         let refreshToken = null
 
-        if (rememberChecked) {
+        // if (rememberChecked) {
             refreshToken = await signRefreshToken(user.id)
             res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
                 sameSite: 'Strict',
                 maxAge: 30 * 24 * 60 * 60 * 1000
             })
-        }
+        // }
         const expire = new Date()
         expire.setMonth(expire.getMonth() + 5)
         await models.User.update({ expire }, { where: { id: user.id } })
@@ -108,6 +109,7 @@ const signIn = async (req, res, next) => {
         const encryptedRole = CryptoJS.AES.encrypt(role.name, process.env.ACCESS_TOKEN_SECRET).toString()
         const userResult = {
             id: user.id,
+            username: user.username,
             firstName: user.firstName,
             lastName: user.lastName,
             email: user.email,
@@ -115,11 +117,8 @@ const signIn = async (req, res, next) => {
             key: encryptedRole,
             grade: user.grade,
             phone: user.phone,
-            city: user.city,
-            district: user.district,
-            ward: user.ward,
-            startPoint: user.starPoint,
-            petId: user.petId,
+            address: user.address,
+            score: user.score,
             dob: user.birthOfDate ? user.birthOfDate.toISOString().split('T')[0] : ''
         }
         return res.status(200).json({ success: true, accessToken, user: userResult })
@@ -131,7 +130,7 @@ const signIn = async (req, res, next) => {
 const signUp = async (req, res, next) => {
     console.log('SIGN UP')
     try {
-        const { firstName, lastName, email, password } = req.body.data
+        const { firstName, lastName, username, email, password } = req.body.data
         const userByEmail = await models.User.findOne({ where: { email } })
         if (userByEmail) {
             return res.status(401).json({ code: 401, message: 'Email is already registered.' })
@@ -140,6 +139,7 @@ const signUp = async (req, res, next) => {
         const newUser = await models.User.create({
             firstName,
             lastName,
+            username,
             password: hashedPassword,
             email,
             type: 'local',
@@ -186,8 +186,7 @@ const verifyEmail = async (req, res, next) => {
         }
         user.emailVerified = true
         await user.save()
-        // const accessToken = jwt.sign({ id: user.id, email: user.email }, 'your-secret-key', { expiresIn: '1h' })
-        const accessToken = await signAccessToken({ id: user.id, email: user.email })
+        const accessToken = await signAccessToken({ userId: user.id })
 
         return res.status(200).json({ success: true, message: 'Email verified successfully.', accessToken })
     } catch (error) {
@@ -221,6 +220,7 @@ const refreshToken = async (req, res, next) => {
     }
 }
 const signOut = async (req, res, next) => {
+    console.log('SIGN OUT')
     try {
         const { refreshToken } = req.cookies
         console.log(refreshToken)
@@ -387,7 +387,7 @@ const signInOrRegisterWithGoogle = async (req, res) => {
             existingUser = await models.User.create(userInfo)
         }
 
-        const accessToken = await signAccessToken(existingUser.id)
+        const accessToken = await signAccessToken({ userId: existingUser.id })
         console.log(accessToken, 'accessTokenGoogle')
         const refreshToken = await signRefreshToken(existingUser.id)
         console.log(refreshToken, 'refreshToken')
@@ -397,7 +397,6 @@ const signInOrRegisterWithGoogle = async (req, res) => {
             sameSite: 'Strict',
             maxAge: 30 * 24 * 60 * 60 * 1000
         })
-
         const expire = new Date()
         expire.setMonth(expire.getMonth() + 1)
         await models.User.update({ expire }, { where: { id: existingUser.id } })
@@ -413,11 +412,9 @@ const signInOrRegisterWithGoogle = async (req, res) => {
             lastName: existingUser.lastName,
             email: existingUser.email,
             avatar: existingUser.avatar,
-            grade: existingUser.grade,
             key: encryptedRole,
             emailVerified: true,
-            starPoint: existingUser.starPoint,
-            petId: existingUser.petId
+            score: existingUser.score,
         }
 
         return res.status(200).json({ success: true, accessToken, user: userResult })
