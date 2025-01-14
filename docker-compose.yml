@@ -1,0 +1,95 @@
+version: "3.8"
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.1
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    ports:
+      - "2181:2181"
+    networks:
+      - app_network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.1
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092 # Dành cho các container khác
+      KAFKA_LISTENER_SECURITY_PROTOCOL: PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092 # Chấp nhận kết nối từ tất cả địa chỉ
+      KAFKA_LISTENER_PORT: 9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - "9092:9092"
+    command:
+      - sh
+      - -c
+      - |
+        sleep 5;
+        /etc/confluent/docker/run &
+        # Tạo các topic cho các sự kiện
+        kafka-topics --create --topic shipping-update-quantity --bootstrap-server kafka:9092 --replication-factor 1 --partitions 3;
+        kafka-topics --create --topic shipping-create-shipment --bootstrap-server kafka:9092 --replication-factor 1 --partitions 3;
+        kafka-topics --create --topic shipping-get-shipment-status --bootstrap-server kafka:9092 --replication-factor 1 --partitions 3;
+        kafka-topics --create --topic inventory-update-quantity --bootstrap-server kafka:9092 --replication-factor 1 --partitions 3;
+        kafka-topics --create --topic inventory-get-quantity --bootstrap-server kafka:9092 --replication-factor 1 --partitions 3;
+        kafka-topics --create --topic inventory-inventory-alert --bootstrap-server kafka:9092 --replication-factor 1 --partitions 3;
+        kafka-topics --list --bootstrap-server kafka:9092;
+        wait
+    networks:
+      - app_network
+
+  shipping:
+    build: ./shippingService
+    container_name: shipping
+    environment:
+      POSTGRES_HOST: dpg-cu0tdmd2ng1s73e32250-a.singapore-postgres.render.com
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: chpttgear_user
+      POSTGRES_PASSWORD: cBUv879D8Rshnxy1eyog0HxePFqPPAXF
+      POSTGRES_DB: chpttgear
+      KAFKA_BROKER: kafka:9092
+      SHIPPING_UPDATE_QUANTITY_TOPIC: shipping-update-quantity
+      SHIPPING_CREATE_SHIPMENT_TOPIC: shipping-create-shipment
+      SHIPPING_GET_SHIPMENT_STATUS_TOPIC: shipping-get-shipment-status
+      PORT: 2223
+      CLIENT_HOST: http://localhost:3000
+      CLIENT_ID: shippingService
+      GROUP_ID: shipping-group
+    depends_on:
+      - kafka
+    ports:
+      - "2223:2223"
+    networks:
+      - app_network
+
+  inventory:
+    build: ./inventoryService
+    container_name: inventory
+    environment:
+      POSTGRES_HOST: dpg-cu0tdmd2ng1s73e32250-a.singapore-postgres.render.com
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: chpttgear_user
+      POSTGRES_PASSWORD: cBUv879D8Rshnxy1eyog0HxePFqPPAXF
+      POSTGRES_DB: chpttgear
+      KAFKA_BROKER: kafka:9092
+      INVENTORY_UPDATE_QUANTITY_TOPIC: inventory-update-quantity
+      INVENTORY_GET_QUANTITY_TOPIC: inventory-get-quantity
+      INVENTORY_INVENTORY_ALERT_TOPIC: inventory-inventory-alert
+      PORT: 2222
+      CLIENT_HOST: http://localhost:3000
+      CLIENT_ID: inventoryService
+      GROUP_ID: inventory-group
+    depends_on:
+      - kafka
+    ports:
+      - "2222:2222"
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
