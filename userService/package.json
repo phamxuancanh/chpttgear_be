@@ -28,6 +28,7 @@
     "nodemailer": "^6.9.15",
     "pg": "^8.13.1",
     "sequelize": "^6.37.5",
+    "userservice": "file:",
     "uuid": "^11.0.4"
   },
   "devDependencies": {
