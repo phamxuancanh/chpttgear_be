@@ -46,6 +46,10 @@ const User = sequelize.define(
             type: DataTypes.STRING,
             allowNull: true
         },
+        type: {
+            type: DataTypes.STRING,
+            defaultValue: 'local'
+        },
         refreshToken: {
             type: DataTypes.STRING
         },

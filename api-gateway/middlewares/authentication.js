@@ -1,6 +1,7 @@
 const JWT = require('jsonwebtoken');
 const axios = require('axios');
 const services = require('../config/services');
+const API_PREFIX = require('../utils/utils').API_PREFIX
 
 const verifyAccessToken = async (req, res, next) => {
     const authHeader = req.headers.authorization;
@@ -17,10 +18,10 @@ const verifyAccessToken = async (req, res, next) => {
         if (!payload || !payload.userId) {
             return res.status(401).json({ error: { message: 'Unauthorized: Invalid token payload' } });
         }
-        const response = await axios.post(`${services.userServiceUrl}/verifyToken`, {
+        const response = await axios.post(`${services.userServiceUrl}${API_PREFIX}/users/verifyToken`, {
             token,
         });
-
+        
         if (response.status !== 200 || !response.data.isValid) {
             return res.status(401).json({ error: { message: 'Unauthorized: Token verification failed' } });
         }
