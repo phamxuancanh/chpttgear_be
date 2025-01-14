@@ -1,17 +1,17 @@
 const { models } = require('../models')
 const CryptoJS = require('crypto-js')
-const axios = require('axios')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const nodemailer = require('nodemailer')
 const path = require('path')
 const fs = require('fs')
+const JWT = require('jsonwebtoken')
+
 const {
     signAccessToken,
     signRefreshToken,
     verifyRefreshToken
 } = require('../middlewares/jwtService')
-const CryptoJS = require('crypto-js')
 const admin = require('../config/firebase-admin-setup')
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -20,7 +20,31 @@ const transporter = nodemailer.createTransport({
         pass: 'tzgrtkohlaydvmzx'
     }
 })
+const verifyToken = async (req, res) => {
+    try {
+        const { token } = req.body;
 
+        if (!token) {
+            return res.status(400).json({ error: { message: 'Token is required' } });
+        }
+
+        const payload = JWT.verify(token, process.env.ACCESS_TOKEN_SECRET);
+
+        if (!payload || !payload.userId) {
+            return res.status(401).json({ error: { message: 'Invalid token payload' } });
+        }
+
+        const user = await models.User.findByPk(payload.userId);
+
+        if (!user || user.accessToken !== token) {
+            return res.status(401).json({ error: { message: 'Token verification failed' } });
+        }
+
+        return res.status(200).json({ isValid: true });
+    } catch (err) {
+        return res.status(401).json({ error: { message: err.message } });
+    }
+};
 const signIn = async (req, res, next) => {
     try {
         const { email, password, rememberChecked } = req.body.data
@@ -105,6 +129,7 @@ const signIn = async (req, res, next) => {
     }
 }
 const signUp = async (req, res, next) => {
+    console.log('SIGN UP')
     try {
         const { firstName, lastName, email, password } = req.body.data
         const userByEmail = await models.User.findOne({ where: { email } })
@@ -402,6 +427,7 @@ const signInOrRegisterWithGoogle = async (req, res) => {
     }
 }
 module.exports = {
+    verifyToken,
     signIn,
     signUp,
     verifyEmail,

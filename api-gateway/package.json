@@ -12,10 +12,13 @@
   "description": "",
   "dependencies": {
     "api-gateway": "file:",
+    "axios": "^1.7.9",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "env-cmd": "^10.1.0",
     "express": "^4.21.2",
     "http-proxy-middleware": "^3.0.3",
+    "jsonwebtoken": "^9.0.2",
     "nodemon": "^3.1.9"
   }
 }

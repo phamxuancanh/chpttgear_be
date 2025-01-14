@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const authController = require('../controllers/user')
 const { verifyToken } = require('../middlewares/authFB')
+router.post('/verifyToken', authController.verifyToken);
 router.post('/signIn', authController.signIn)
 router.post('/signUp', authController.signUp)
 router.post('/refreshToken', authController.refreshToken)
