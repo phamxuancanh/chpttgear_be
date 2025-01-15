@@ -12,7 +12,7 @@ module.exports = (app) => {
         `${API_PREFIX}/users`,
         (req, res, next) => {
             const pathWithoutPrefix = req.path.replace(`${API_PREFIX}/users`, '')
-            if (!['/signUp', '/signIn', '/verifyEmail', '/google', '/sendOTP','/verifyOTP','/resetPassword'].includes(pathWithoutPrefix)) {
+            if (!['/signUp', '/signIn', '/verifyEmail', '/google', '/sendOTP','/verifyOTP','/resetPassword', '/verifyToken', '/refreshToken'].includes(pathWithoutPrefix)) {
                 return verifyAccessToken(req, res, next)
             }
             next()
