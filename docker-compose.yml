@@ -42,6 +42,27 @@ services:
     networks:
       - app_network
 
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    environment:
+      USER_SERVICE_URL: http://localhost:1111
+      PRODUCT_SERVICE_URL: http://localhost:4444
+      INVENTORY_SERVICE_URL: http://localhost:2222
+      CART_SERVICE_URL: http://localhost:4445
+      ORDER_SERVICE_URL: http://localhost:3333
+      PAYMENT_SERVICE_URL: http://localhost:3334
+      SHIPPING_SERVICE_URL: http://localhost:2223
+      REVIEW_RATING_SERVICE_URL: http://localhost:5555
+      NOTIFICATION_SERVICE_URL: http://localhost:5556
+      RECOMMENDATION_SERVICE_URL: http://localhost:1112
+    depends_on:
+      - kafka
+    ports:
+      - "6868:6868"
+    networks:
+      - app_network
+
   shipping:
     build: ./shippingService
     container_name: shipping
@@ -94,42 +115,20 @@ services:
     build: ./userService
     container_name: user
     environment:
-      POSTGRES_HOST: dpg-ctvo2n5ds78s73eomaig-a.singapore-postgres.render.com
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: sa
-      POSTGRES_PASSWORD: bvGGKK3v5JU7gKvIExEQdAW8n7GXcW0R
-      POSTGRES_DB: mixed_chptt_pxc
-      KAFKA_BROKER: kafka:9092
+      DB_NAME: mixed_chptt_pxc
+      DB_USER: sa
+      DB_PASS: bvGGKK3v5JU7gKvIExEQdAW8n7GXcW0R
+      DB_HOST: dpg-ctvo2n5ds78s73eomaig-a.singapore-postgres.render.com
+      DB_PORT: 5432
+      CLIENT_PORT: 3000
       PORT: 1111
-      CLIENT_HOST: http://localhost:3000
-      CLIENT_ID: userService
-      GROUP_ID: user-group
+      ACCESS_TOKEN_SECRET=: chptt@20075851
     depends_on:
       - kafka
     ports:
       - "1111:1111"
     networks:
       - app_network
-  recommendation:
-    build: ./recommendationService
-    container_name: recommendation
-    environment:
-      POSTGRES_HOST: dpg-ctvo2n5ds78s73eomaig-a.singapore-postgres.render.com
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: sa
-      POSTGRES_PASSWORD: bvGGKK3v5JU7gKvIExEQdAW8n7GXcW0R
-      POSTGRES_DB: mixed_chptt_pxc
-      KAFKA_BROKER: kafka:9092
-      PORT: 1112
-      CLIENT_HOST: http://localhost:3000
-      CLIENT_ID: recommendationService
-      GROUP_ID: recommendation-group
-    depends_on:
-      - kafka
-    ports:
-      - "1112:1112"
-    networks:
-      - app_network  
 networks:
   app_network:
     driver: bridge
