@@ -6,35 +6,28 @@ const kafka = new Kafka({
 });
 
 const consumer = kafka.consumer({ groupId: process.env.GROUP_ID });
-const producer = kafka.producer(); // Khởi tạo producer một lần duy nhất
+const producer = kafka.producer();
 
 const listenKafka = async () => {
   try {
-    // Kết nối tới Kafka broker
     await consumer.connect();
-    await producer.connect(); // Kết nối producer một lần duy nhất
+    await producer.connect();
 
-    // Đăng ký nhiều topic để nhận tin nhắn
-    await consumer.subscribe({
-      topic: "shipping-update-quantity",
-      fromBeginning: false,
-    });
-    await consumer.subscribe({
-      topic: "shipping-create-shipment",
-      fromBeginning: false,
-    });
-    await consumer.subscribe({
-      topic: "shipping-get-shipment-status",
-      fromBeginning: false,
-    });
+    const topics = [
+      "shipping-update-quantity",
+      "shipping-create-shipment",
+      "shipping-get-shipment-status",
+    ];
 
-    // Xử lý tin nhắn nhận được từ các topic
+    for (const topic of topics) {
+      await consumer.subscribe({ topic, fromBeginning: false });
+    }
+
     await consumer.run({
       eachMessage: async ({ topic, partition, message }) => {
         console.log(`Received message from topic: ${topic}`);
         console.log(`Message value: ${message.value.toString()}`);
 
-        // Xử lý các tin nhắn theo từng topic
         switch (topic) {
           case "shipping-update-quantity":
             console.log(
@@ -59,6 +52,16 @@ const listenKafka = async () => {
         }
       },
     });
+
+    // Gracefully disconnect Kafka consumer and producer on process termination
+    const shutdown = async () => {
+      await consumer.disconnect();
+      await producer.disconnect();
+      process.exit(0);
+    };
+
+    process.on("SIGINT", shutdown);
+    process.on("SIGTERM", shutdown);
   } catch (error) {
     console.error("Error connecting to Kafka:", error.message);
   }
