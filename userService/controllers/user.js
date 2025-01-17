@@ -431,44 +431,71 @@ const signInOrRegisterWithGoogle = async (req, res) => {
 }
 const getUserById = async (req, res, next) => {
     try {
-      const { id } = req.params
-      const user = await models.User.findByPk(id, {
-        attributes: [
-          'avatar',
-          'email',
-          'firstName',
-          'id',
-          'lastName',
-          'roleId',
-          'phone',
-          'score',
-        ]
-      })
-  
-      if (!user) {
-        return res.status(404).json({ message: 'not found' })
-      }
-  
-      const role = await models.Role.findOne({
-        where: { id: user.roleId }
-      })
-      const encryptedRole = CryptoJS.AES.encrypt(role.name, process.env.ACCESS_TOKEN_SECRET).toString()
-      const userResult = {
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        avatar: user.avatar,
-        key: encryptedRole,
-        phone: user.phone,
-        score: user.score,
-      }
-      res.json(userResult)
+        const { id } = req.params
+        const user = await models.User.findByPk(id, {
+            attributes: [
+                'avatar',
+                'email',
+                'firstName',
+                'id',
+                'lastName',
+                'roleId',
+                'phone',
+                'score',
+                'address',
+                'birthOfDate',
+                'createdAt',
+            ]
+        })
+
+        if (!user) {
+            return res.status(404).json({ message: 'not found' })
+        }
+
+        const role = await models.Role.findOne({
+            where: { id: user.roleId }
+        })
+        const encryptedRole = CryptoJS.AES.encrypt(role.name, process.env.ACCESS_TOKEN_SECRET).toString()
+        const userResult = {
+            id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            avatar: user.avatar,
+            key: encryptedRole,
+            phone: user.phone,
+            score: user.score,
+            address: user.address,
+            dob: user.birthOfDate ? user.birthOfDate.toISOString().split('T')[0] : '',
+            createdAt: user.createdAt.toISOString().split('T')[0]
+        }
+        res.json(userResult)
     } catch (error) {
-      console.log('error', error)
-      res.status(500).json({ message: 'not found' })
+        console.log('error', error)
+        res.status(500).json({ message: 'not found' })
     }
-  }
+}
+const editUserById = async (req, res, next) => {
+    try {
+        console.log("EDIT USER BY ID")
+        const { id } = req.params
+        const { name, email, phone, dob, addresses } = req.body.data
+        const userToEdit = await models.User.findByPk(id)
+        if (!userToEdit) {
+            return res.status(404).json({ message: 'User not found' })
+        }
+        const firstName = name.split(' ')[0]
+        const lastName = name.split(' ')[1]
+        const birthOfDate = new Date(dob)
+        const address = addresses
+        const updatedUser = await userToEdit.update({ firstName, lastName, birthOfDate, phone, email, address})
+
+        return res.json(updatedUser)
+    } catch (error) {
+        console.log('error', error)
+        res.status(500).json({ message: 'Update user fail' })
+    }
+}
 module.exports = {
     verifyToken,
     signIn,
@@ -481,5 +508,6 @@ module.exports = {
     signInOrRegisterWithGoogle,
     sendOTP,
     verifyOTP,
-    getUserById
+    getUserById,
+    editUserById
 }

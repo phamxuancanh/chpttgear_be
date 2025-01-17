@@ -14,6 +14,7 @@ router.use('/protected', verifyToken, (req, res) => {
   res.status(200).json({ message: 'Access granted', user: req.user })
 })
 router.get('/:id', authController.getUserById)
+router.put('/:id', authController.editUserById)
 router.post('/sendOTP', authController.sendOTP)
 router.post('/verifyOTP', authController.verifyOTP)
 router.post('/resetPassword', authController.resetPassword)
