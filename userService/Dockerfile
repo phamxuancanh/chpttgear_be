@@ -1,5 +1,5 @@
 # Dockerfile cho Inventory Service
-FROM node:20.18.1
+FROM node:18
 
 WORKDIR /index
 
