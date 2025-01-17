@@ -1,6 +1,6 @@
 const { models } = require('../models')
 const CryptoJS = require('crypto-js')
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const nodemailer = require('nodemailer')
 const path = require('path')
@@ -49,33 +49,7 @@ const verifyToken = async (req, res) => {
         return res.status(401).json({ error: { message: err.message } });
     }
 };
-// const verifyToken = async (req, res) => {
-//     try {
-//         console.log('verifyToken');
-//         const { token } = req.body;
-//         console.log(token, 'token')
-//         console.log(req.body)
-//         if (!token) {
-//             return res.status(400).json({ error: { message: 'Token is required' } });
-//         }
 
-//         const payload = JWT.verify(token, process.env.ACCESS_TOKEN_SECRET);
-
-//         if (!payload || !payload.userId) {
-//             return res.status(401).json({ error: { message: 'Invalid token payload' } });
-//         }
-
-//         const user = await models.User.findByPk(payload.userId);
-
-//         if (!user || user.accessToken !== token) {
-//             return res.status(401).json({ error: { message: 'Token verification failed' } });
-//         }
-
-//         return res.status(200).json({ isValid: true });
-//     } catch (err) {
-//         return res.status(401).json({ error: { message: err.message } });
-//     }
-// };
 const signIn = async (req, res, next) => {
     try {
         const { username, password } = req.body.data
@@ -385,6 +359,7 @@ const resetPassword = async (req, res, next) => {
     }
 }
 const signInOrRegisterWithGoogle = async (req, res) => {
+    console.log('SIGN IN OR REGISTER WITH GOOGLE')
     try {
         const { idToken } = req.body
         if (!idToken) {
