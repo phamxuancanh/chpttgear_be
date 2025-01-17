@@ -1,7 +1,7 @@
 const { fakerEN: faker } = require('@faker-js/faker')
 const User = require('../models/user')
 const Role = require('../models/role')
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcryptjs')
 const { v4: uuidv4 } = require('uuid')
 
 const findRoleIdByName = async (roleName) => {
