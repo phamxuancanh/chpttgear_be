@@ -171,6 +171,7 @@ const signUp = async (req, res, next) => {
     }
 }
 const verifyEmail = async (req, res, next) => {
+    console.log('VERIFY EMAILLLLLL')
     try {
         const { token } = req.query
         console.log(token, 'token')
