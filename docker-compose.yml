@@ -133,6 +133,53 @@ services:
     networks:
       - app_network
 
+  order:
+    build: ./orderService
+    container_name: order
+    environment:
+      DB_NAME: mixed_chptt
+      DB_USER: sa
+      DB_PASS: SH8mzqwhcaSalLiI1mfhFldqpowgotZP
+      DB_HOST: dpg-ctvnq9jtq21c73agid10-a.singapore-postgres.render.com
+      DB_PORT: 5432
+      PORT: 3333
+      KAFKA_BROKER: kafka:9092
+      ORDER_CREATE_TOPIC: order-create
+      ORDER_UPDATE_STATUS_TOPIC: order-update-status
+      ORDER_CANCEL_TOPIC: order-cancel
+      CLIENT_HOST: http://localhost:3000
+      CLIENT_ID: orderservice
+      GROUP_ID: order-group
+    depends_on:
+      - kafka
+    ports:
+      - "3333:3333"
+    networks:
+      - app_network
+
+payment:
+  build: ./paymentService
+  container_name: payment
+  environment:
+    DB_NAME: mixed_chptt
+    DB_USER: sa
+    DB_PASS: SH8mzqwhcaSalLiI1mfhFldqpowgotZP
+    DB_HOST: dpg-ctvnq9jtq21c73agid10-a.singapore-postgres.render.com
+    DB_PORT: 5432
+    PORT: 3334
+    KAFKA_BROKER: kafka:9092
+    ORDER_CREATE_TOPIC: payment-create
+    ORDER_UPDATE_STATUS_TOPIC: payment-update-status
+    ORDER_CANCEL_TOPIC: payment-cancel
+    CLIENT_HOST: http://localhost:3000
+    CLIENT_ID: payment
+    GROUP_ID: payment-group
+  depends_on:
+    - kafka
+  ports:
+    - "3334:3334"
+  networks:
+    - app_network
 networks:
   app_network:
     driver: bridge
