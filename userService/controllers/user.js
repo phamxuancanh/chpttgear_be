@@ -1,6 +1,6 @@
 const { models } = require('../models')
 const CryptoJS = require('crypto-js')
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const nodemailer = require('nodemailer')
 const path = require('path')
@@ -24,7 +24,6 @@ const verifyToken = async (req, res) => {
     try {
         console.log('verifyToken');
         const { token } = req.body;
-
         if (!token) {
             return res.status(400).json({ error: { message: 'Token is required' } });
         }
@@ -41,11 +40,16 @@ const verifyToken = async (req, res) => {
             return res.status(401).json({ error: { message: 'Token verification failed' } });
         }
 
+        if (new Date() > user.expireAccessToken) {
+            return res.status(401).json({ error: { message: 'Token has expired' } });
+        }
+
         return res.status(200).json({ isValid: true });
     } catch (err) {
         return res.status(401).json({ error: { message: err.message } });
     }
 };
+
 const signIn = async (req, res, next) => {
     try {
         const { username, password } = req.body.data
@@ -100,8 +104,8 @@ const signIn = async (req, res, next) => {
             })
         // }
         const expire = new Date()
-        expire.setMonth(expire.getMonth() + 5)
-        await models.User.update({ expire }, { where: { id: user.id } })
+        expire.setMonth(expire.getMonth() + 1)
+        await models.User.update({ expireRefreshToken: expire }, { where: { id: user.id } })
         res.setHeader('authorization', accessToken)
         const role = await models.Role.findOne({
             where: { id: user.roleId }
@@ -167,6 +171,7 @@ const signUp = async (req, res, next) => {
     }
 }
 const verifyEmail = async (req, res, next) => {
+    console.log('VERIFY EMAILLLLLL')
     try {
         const { token } = req.query
         console.log(token, 'token')
@@ -210,7 +215,7 @@ const refreshToken = async (req, res, next) => {
         }
         const userId = await verifyRefreshToken(refreshToken)
         console.log(userId, 'userId')
-        const accessToken = await signAccessToken(userId)
+        const accessToken = await signAccessToken({ userId: userId })
         res.setHeader('authorization', accessToken)
         console.log(accessToken)
         return res.status(200).json({ success: true, accessToken })
@@ -355,6 +360,7 @@ const resetPassword = async (req, res, next) => {
     }
 }
 const signInOrRegisterWithGoogle = async (req, res) => {
+    console.log('SIGN IN OR REGISTER WITH GOOGLE')
     try {
         const { idToken } = req.body
         if (!idToken) {
@@ -423,6 +429,46 @@ const signInOrRegisterWithGoogle = async (req, res) => {
         res.status(500).json({ message: 'Lỗi khi đăng ký với Google' })
     }
 }
+const getUserById = async (req, res, next) => {
+    try {
+      const { id } = req.params
+      const user = await models.User.findByPk(id, {
+        attributes: [
+          'avatar',
+          'email',
+          'firstName',
+          'id',
+          'lastName',
+          'roleId',
+          'phone',
+          'score',
+        ]
+      })
+  
+      if (!user) {
+        return res.status(404).json({ message: 'not found' })
+      }
+  
+      const role = await models.Role.findOne({
+        where: { id: user.roleId }
+      })
+      const encryptedRole = CryptoJS.AES.encrypt(role.name, process.env.ACCESS_TOKEN_SECRET).toString()
+      const userResult = {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        avatar: user.avatar,
+        key: encryptedRole,
+        phone: user.phone,
+        score: user.score,
+      }
+      res.json(userResult)
+    } catch (error) {
+      console.log('error', error)
+      res.status(500).json({ message: 'not found' })
+    }
+  }
 module.exports = {
     verifyToken,
     signIn,
@@ -434,5 +480,6 @@ module.exports = {
     resetPassword,
     signInOrRegisterWithGoogle,
     sendOTP,
-    verifyOTP
+    verifyOTP,
+    getUserById
 }

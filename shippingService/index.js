@@ -45,7 +45,7 @@ async function main() {
 
     app.listen(process.env.PORT || 2223, () => {
       // Thay app.listen thành server.listen
-      console.log("Server is running on port", process.env.PORT || 5000);
+      console.log("Server is running on port", process.env.PORT || 2223);
     });
   } catch (error) {
     console.error("Error:", error);
