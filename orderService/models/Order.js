@@ -26,6 +26,18 @@ const Order = sequelize.define('Order', {
         type: DataTypes.DOUBLE,
         allowNull: false,
         defaultValue: 0.0,
+    },
+    provinceId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    districtId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    wardCode: {
+        type: DataTypes.STRING,
+        allowNull: true,
     }
 }, {
     tableName: "order",

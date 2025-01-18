@@ -1,4 +1,4 @@
-version: "3.8"
+version: "3.9"
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.1
@@ -39,6 +39,30 @@ services:
         kafka-topics --create --topic inventory-inventory-alert --bootstrap-server kafka:9092 --replication-factor 1 --partitions 3;
         kafka-topics --list --bootstrap-server kafka:9092;
         wait
+    networks:
+      - app_network
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    environment:
+      USER_SERVICE_URL: http://user:1111
+      PRODUCT_SERVICE_URL: http://product:4444
+      INVENTORY_SERVICE_URL: http://inventory:2222
+      CART_SERVICE_URL: http://cart:4445
+      ORDER_SERVICE_URL: http://order:3333
+      PAYMENT_SERVICE_URL: http://payment:3334
+      SHIPPING_SERVICE_URL: http://shipping:2223
+      REVIEW_RATING_SERVICE_URL: http://reviewrating:5555
+      NOTIFICATION_SERVICE_URL: http://notification:5556
+      RECOMMENDATION_SERVICE_URL: http://recommendation:1112
+    depends_on:
+      - kafka
+      - inventory
+      - shipping
+      - user
+    ports:
+      - "6868:6868"
     networks:
       - app_network
 
@@ -90,6 +114,72 @@ services:
     networks:
       - app_network
 
+  user:
+    build: ./userService
+    container_name: user
+    environment:
+      DB_NAME: mixed_chptt_pxc
+      DB_USER: sa
+      DB_PASS: bvGGKK3v5JU7gKvIExEQdAW8n7GXcW0R
+      DB_HOST: dpg-ctvo2n5ds78s73eomaig-a.singapore-postgres.render.com
+      DB_PORT: 5432
+      CLIENT_PORT: 3000
+      PORT: 1111
+      ACCESS_TOKEN_SECRET: chptt@20075851
+    depends_on:
+      - kafka
+    ports:
+      - "1111:1111"
+    networks:
+      - app_network
+
+  order:
+    build: ./orderService
+    container_name: order
+    environment:
+      DB_NAME: mixed_chptt
+      DB_USER: sa
+      DB_PASS: SH8mzqwhcaSalLiI1mfhFldqpowgotZP
+      DB_HOST: dpg-ctvnq9jtq21c73agid10-a.singapore-postgres.render.com
+      DB_PORT: 5432
+      PORT: 3333
+      KAFKA_BROKER: kafka:9092
+      ORDER_CREATE_TOPIC: order-create
+      ORDER_UPDATE_STATUS_TOPIC: order-update-status
+      ORDER_CANCEL_TOPIC: order-cancel
+      CLIENT_HOST: http://localhost:3000
+      CLIENT_ID: orderservice
+      GROUP_ID: order-group
+    depends_on:
+      - kafka
+    ports:
+      - "3333:3333"
+    networks:
+      - app_network
+
+payment:
+  build: ./paymentService
+  container_name: payment
+  environment:
+    DB_NAME: mixed_chptt
+    DB_USER: sa
+    DB_PASS: SH8mzqwhcaSalLiI1mfhFldqpowgotZP
+    DB_HOST: dpg-ctvnq9jtq21c73agid10-a.singapore-postgres.render.com
+    DB_PORT: 5432
+    PORT: 3334
+    KAFKA_BROKER: kafka:9092
+    ORDER_CREATE_TOPIC: payment-create
+    ORDER_UPDATE_STATUS_TOPIC: payment-update-status
+    ORDER_CANCEL_TOPIC: payment-cancel
+    CLIENT_HOST: http://localhost:3000
+    CLIENT_ID: payment
+    GROUP_ID: payment-group
+  depends_on:
+    - kafka
+  ports:
+    - "3334:3334"
+  networks:
+    - app_network
 networks:
   app_network:
     driver: bridge
