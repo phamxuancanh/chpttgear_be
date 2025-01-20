@@ -148,7 +148,7 @@ services:
       ORDER_UPDATE_STATUS_TOPIC: order-update-status
       ORDER_CANCEL_TOPIC: order-cancel
       CLIENT_HOST: http://localhost:3000
-      CLIENT_ID: orderservice
+      CLIENT_ID: orderService
       GROUP_ID: order-group
     depends_on:
       - kafka
@@ -172,7 +172,7 @@ payment:
     ORDER_UPDATE_STATUS_TOPIC: payment-update-status
     ORDER_CANCEL_TOPIC: payment-cancel
     CLIENT_HOST: http://localhost:3000
-    CLIENT_ID: payment
+    CLIENT_ID: paymentService
     GROUP_ID: payment-group
   depends_on:
     - kafka
