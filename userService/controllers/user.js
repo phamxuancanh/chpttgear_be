@@ -13,6 +13,7 @@ const {
     verifyRefreshToken
 } = require('../middlewares/jwtService')
 const admin = require('../config/firebase-admin-setup')
+const { type } = require('os')
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -173,13 +174,14 @@ const signUp = async (req, res, next) => {
 const verifyEmail = async (req, res, next) => {
     console.log('VERIFY EMAILLLLLL')
     try {
-        const { token } = req.query
+        const { token } = req.body.params
+        console.log(req)
         console.log(token, 'token')
         if (!token) {
             return res.status(400).json({ message: 'Missing token.' })
         }
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
-        console.log(decoded, 'decoded')
+        console.log(decoded, 'decoded') 
         const { id, email } = decoded
 
         const user = await models.User.findOne({ where: { id, email } })
@@ -322,24 +324,35 @@ const verifyOTP = async (req, res, next) => {
 }
 const changePassword = async (req, res, next) => {
     try {
-        const { id } = req.params
-        const { oldPassword, newPassword } = req.body
-        const user = await models.User.findByPk(id)
-        const isPasswordValid = bcrypt.compareSync(oldPassword, user.password)
+        const { id } = req.params;
+        const { oldPassword, newPassword } = req.body.data;
+        console.log(req.body.data);
+        console.log(oldPassword);
+        console.log(newPassword);
+
+        const user = await models.User.findByPk(id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const isPasswordValid = bcrypt.compareSync(oldPassword, user.password);
         if (!isPasswordValid) {
             return res.status(401).json({
                 code: 401,
                 message: 'Old password is incorrect.'
-            })
+            });
         }
-        const salt = await bcrypt.genSalt(10)
-        const hashPassword = bcrypt.hashSync(newPassword, salt)
-        await user.update({ password: hashPassword })
-        return res.status(200).json({ success: true })
+
+        const salt = await bcrypt.genSalt(10);
+        const hashPassword = bcrypt.hashSync(newPassword, salt);
+        await user.update({ password: hashPassword });
+
+        return res.status(200).json({ success: true });
     } catch (error) {
-        next(error)
+        console.log('error', error);
+        next(error);
     }
-}
+};
 const resetPassword = async (req, res, next) => {
     try {
         const { email, newPassword } = req.body.data
@@ -431,44 +444,71 @@ const signInOrRegisterWithGoogle = async (req, res) => {
 }
 const getUserById = async (req, res, next) => {
     try {
-      const { id } = req.params
-      const user = await models.User.findByPk(id, {
-        attributes: [
-          'avatar',
-          'email',
-          'firstName',
-          'id',
-          'lastName',
-          'roleId',
-          'phone',
-          'score',
-        ]
-      })
-  
-      if (!user) {
-        return res.status(404).json({ message: 'not found' })
-      }
-  
-      const role = await models.Role.findOne({
-        where: { id: user.roleId }
-      })
-      const encryptedRole = CryptoJS.AES.encrypt(role.name, process.env.ACCESS_TOKEN_SECRET).toString()
-      const userResult = {
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        avatar: user.avatar,
-        key: encryptedRole,
-        phone: user.phone,
-        score: user.score,
-      }
-      res.json(userResult)
+        const { id } = req.params
+        const user = await models.User.findByPk(id, {
+            attributes: [
+                'avatar',
+                'email',
+                'firstName',
+                'id',
+                'lastName',
+                'roleId',
+                'phone',
+                'score',
+                'address',
+                'birthOfDate',
+                'createdAt',
+                'type'
+            ]
+        })
+
+        if (!user) {
+            return res.status(404).json({ message: 'not found' })
+        }
+
+        const role = await models.Role.findOne({
+            where: { id: user.roleId }
+        })
+        const encryptedRole = CryptoJS.AES.encrypt(role.name, process.env.ACCESS_TOKEN_SECRET).toString()
+        const userResult = {
+            id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            avatar: user.avatar,
+            key: encryptedRole,
+            phone: user.phone,
+            score: user.score,
+            address: user.address,
+            birthOfDate: user.birthOfDate ? user.birthOfDate.toISOString().split('T')[0] : '',
+            createdAt: user.createdAt.toISOString().split('T')[0],
+            type: user.type
+        }
+        res.json(userResult)
     } catch (error) {
-      console.log('error', error)
-      res.status(500).json({ message: 'not found' })
+        console.log('error', error)
+        res.status(500).json({ message: 'not found' })
     }
-  }
+}
+const editUserById = async (req, res, next) => {
+    try {
+        console.log("EDIT USER BY ID")
+        const { id } = req.params
+        const { firstName, lastName, email, phone, birthOfDate, address } = req.body.data
+        const userToEdit = await models.User.findByPk(id)
+        if (!userToEdit) {
+            return res.status(404).json({ message: 'User not found' })
+        }
+        // const birthOfDateDB = new Date(birthOfDate)
+
+        const updatedUser = await userToEdit.update({ firstName, lastName, birthOfDate, phone, email, address })
+
+        return res.json(updatedUser)
+    } catch (error) {
+        console.log('error', error)
+        res.status(500).json({ message: 'Update user fail' })
+    }
+}
 module.exports = {
     verifyToken,
     signIn,
@@ -481,5 +521,6 @@ module.exports = {
     signInOrRegisterWithGoogle,
     sendOTP,
     verifyOTP,
-    getUserById
+    getUserById,
+    editUserById
 }
