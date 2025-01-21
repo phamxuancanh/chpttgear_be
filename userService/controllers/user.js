@@ -7,7 +7,7 @@ const path = require('path')
 const fs = require('fs')
 const JWT = require('jsonwebtoken')
 const admin = require('../config/firebase-admin-setup')
-
+const cloudinary = require('../config/cloudinary');
 const {
     signAccessToken,
     signRefreshToken,
@@ -20,7 +20,6 @@ const transporter = nodemailer.createTransport({
         pass: 'tzgrtkohlaydvmzx'
     }
 })
-const bucket = admin.storage().bucket(process.env.FIREBASE_STORAGE_BUCKET); // Khởi tạo bucket
 
 const verifyToken = async (req, res) => {
     try {
@@ -513,51 +512,44 @@ const editUserById = async (req, res, next) => {
 const changeAVT = async (req, res, next) => {
     try {
         const { id } = req.params;
-
-        // Kiểm tra file được upload
-        if (!req.file) {
-            return res.status(400).json({ message: 'No file uploaded' });
-        }
-
-        const image = req.file.originalname.split('.');
-        const fileType = image[image.length - 1];
-        const filePath = `avatars/AVT_${id}_${Date.now().toString()}.${fileType}`;
-
-        // Tìm user trong database
         const user = await models.User.findByPk(id);
+        console.log(req.file);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Tải lên Firebase Storage
-        const blob = bucket.file(filePath);
-        const blobStream = blob.createWriteStream({
-            metadata: {
-                contentType: req.file.mimetype,
+        if (!req.file) {
+            return res.status(400).json({ message: 'No file uploaded' });
+        }
+
+        // Sử dụng upload_stream đúng cách
+        const uploadStream = cloudinary.uploader.upload_stream(
+            {
+                folder: 'avatars',
+                public_id: `AVT_${id}_${Date.now()}`,
+                resource_type: 'image',
             },
-        });
+            async (error, result) => {
+                if (error) {
+                    console.error('Error uploading to Cloudinary:', error);
+                    return res.status(500).json({ message: 'Upload to Cloudinary failed' });
+                }
 
-        blobStream.on('error', (error) => {
-            console.error('Upload error:', error);
-            return res.status(500).json({ message: 'Error uploading file' });
-        });
+                await user.update({ avatar: result.secure_url });
+                res.json({
+                    id: user.id,
+                    avatar: result.secure_url,
+                });
+            }
+        );
 
-        blobStream.on('finish', async () => {
-            // Lấy URL công khai của ảnh
-            const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(filePath)}?alt=media`;
-
-            // Cập nhật avatar của user
-            const updatedUser = await user.update({ avatar: publicUrl });
-
-            res.json(updatedUser);
-        });
-
-        blobStream.end(req.file.buffer);
+        uploadStream.end(req.file.buffer); // Gửi buffer lên Cloudinary
     } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        console.error('Error processing avatar update:', error);
+        res.status(500).json({ message: 'An error occurred while changing the avatar' });
     }
 };
+
 
 module.exports = {
     verifyToken,
