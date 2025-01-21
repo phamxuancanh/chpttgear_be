@@ -6,14 +6,13 @@ const nodemailer = require('nodemailer')
 const path = require('path')
 const fs = require('fs')
 const JWT = require('jsonwebtoken')
+const admin = require('../config/firebase-admin-setup')
 
 const {
     signAccessToken,
     signRefreshToken,
     verifyRefreshToken
 } = require('../middlewares/jwtService')
-const admin = require('../config/firebase-admin-setup')
-const { type } = require('os')
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -21,6 +20,8 @@ const transporter = nodemailer.createTransport({
         pass: 'tzgrtkohlaydvmzx'
     }
 })
+const bucket = admin.storage().bucket(process.env.FIREBASE_STORAGE_BUCKET); // Khởi tạo bucket
+
 const verifyToken = async (req, res) => {
     try {
         console.log('verifyToken');
@@ -509,6 +510,55 @@ const editUserById = async (req, res, next) => {
         res.status(500).json({ message: 'Update user fail' })
     }
 }
+const changeAVT = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        // Kiểm tra file được upload
+        if (!req.file) {
+            return res.status(400).json({ message: 'No file uploaded' });
+        }
+
+        const image = req.file.originalname.split('.');
+        const fileType = image[image.length - 1];
+        const filePath = `avatars/AVT_${id}_${Date.now().toString()}.${fileType}`;
+
+        // Tìm user trong database
+        const user = await models.User.findByPk(id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Tải lên Firebase Storage
+        const blob = bucket.file(filePath);
+        const blobStream = blob.createWriteStream({
+            metadata: {
+                contentType: req.file.mimetype,
+            },
+        });
+
+        blobStream.on('error', (error) => {
+            console.error('Upload error:', error);
+            return res.status(500).json({ message: 'Error uploading file' });
+        });
+
+        blobStream.on('finish', async () => {
+            // Lấy URL công khai của ảnh
+            const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(filePath)}?alt=media`;
+
+            // Cập nhật avatar của user
+            const updatedUser = await user.update({ avatar: publicUrl });
+
+            res.json(updatedUser);
+        });
+
+        blobStream.end(req.file.buffer);
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
 module.exports = {
     verifyToken,
     signIn,
@@ -522,5 +572,6 @@ module.exports = {
     sendOTP,
     verifyOTP,
     getUserById,
-    editUserById
+    editUserById,
+    changeAVT
 }
