@@ -1,4 +1,6 @@
+
 const { Order } = require("../models");
+
 
 // Get all orders
 exports.getAllOrders = async () => {
@@ -35,15 +37,17 @@ exports.getOrderByUserId = async (userId) => {
   }
 };
 
-// Create a new order
 exports.createOrder = async (orderData) => {
+
   try {
     const order = await Order.create(orderData);
     return order;
   } catch (error) {
     throw new Error("Error creating order");
   }
+
 };
+
 
 // Update an existing order
 exports.updateOrder = async (orderId, orderData) => {

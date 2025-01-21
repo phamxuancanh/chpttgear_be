@@ -147,7 +147,7 @@ services:
       PORT: 3333
       KAFKA_BROKER: kafka:9092
       CLIENT_HOST: http://localhost:3000
-      CLIENT_ID: orderservice
+      CLIENT_ID: orderService
       GROUP_ID: order-group
     depends_on:
       - kafka
@@ -155,7 +155,7 @@ services:
       - "3333:3333"
     networks:
       - app_network
-
+      
   payment:
     build: ./paymentService
     container_name: payment
