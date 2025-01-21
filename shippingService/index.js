@@ -3,10 +3,8 @@ const express = require("express");
 const { initSequelize } = require("./models");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const { listenKafka } = require("./services/Shipping_Order_Service");
-
 const app = express();
-
+const { run } = require("./services/Shipping_Order_Service");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
@@ -35,8 +33,7 @@ app.use((req, res, next) => {
   next();
 });
 // Routes
-
-listenKafka().catch(console.error);
+run().catch(console.error);
 // Khởi tạo cơ sở dữ liệu và bắt đầu server
 async function main() {
   try {

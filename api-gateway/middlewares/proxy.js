@@ -47,10 +47,21 @@ module.exports = (app) => {
     })
   );
 
+  app.use(
+    `${API_PREFIX}/products`,
+    // verifyAccessToken,
+    rateLimitAndTimeout("/products", RATE_LIMIT, TIMEOUT),
+    createProxyMiddleware({
+      target: process.env.PRODUCT_SERVICE_URL + `${API_PREFIX}/products`,
+      changeOrigin: true,
+      pathRewrite: { [`^${API_PREFIX}/products`]: "" },
+    })
+  );
+
   // Proxy for Cart Service
   app.use(
     `${API_PREFIX}/cart`,
-    verifyAccessToken,
+    // verifyAccessToken,
     rateLimitAndTimeout("/cart", RATE_LIMIT, TIMEOUT),
     createProxyMiddleware({
       target: process.env.CART_SERVICE_URL + `${API_PREFIX}/cart`,
@@ -62,7 +73,7 @@ module.exports = (app) => {
   // Proxy for Order Service
   app.use(
     `${API_PREFIX}/orders`,
-    verifyAccessToken,
+    // verifyAccessToken,
     rateLimitAndTimeout("/orders", RATE_LIMIT, TIMEOUT),
     createProxyMiddleware({
       target: process.env.ORDER_SERVICE_URL + `${API_PREFIX}/orders`,
@@ -74,7 +85,7 @@ module.exports = (app) => {
   // Proxy for Payment Service
   app.use(
     `${API_PREFIX}/payments`,
-    verifyAccessToken,
+    // verifyAccessToken,
     rateLimitAndTimeout("/payments", RATE_LIMIT, TIMEOUT),
     createProxyMiddleware({
       target: process.env.PAYMENT_SERVICE_URL + `${API_PREFIX}/payment`,

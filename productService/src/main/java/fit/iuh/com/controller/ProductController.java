@@ -35,6 +35,7 @@ public class ProductController {
 
     @PostMapping("/products")
     public Product createProduct(@RequestBody Product product){
+        System.out.println("test create");
         return productService.createProduct(product);
     }
 

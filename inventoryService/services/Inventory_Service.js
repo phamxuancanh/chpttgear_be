@@ -6,7 +6,7 @@ const PurchaseOrder = models.Purchase_Order;
 const PurchaseOrderDetail = models.Purchase_Order_Detail;
 
 const kafka = new Kafka({
-  clientId: process.env.CLIENT_ID,
+  clientId: process.env.CLIENT_ID || "chptt_gear",
   brokers: [process.env.KAFKA_BROKER || "kafka:9092"],
 });
 
@@ -24,6 +24,8 @@ const createInventory = async (data) => {
     };
 
     await producer.connect();
+
+    // Gửi thông điệp tới topic "shipping-update-quantity"
     await producer.send({
       topic: "shipping-update-quantity", // Gửi tới topic shipping-update-quantity
       messages: [message],
