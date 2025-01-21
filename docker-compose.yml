@@ -9,9 +9,8 @@ services:
       - "2181:2181"
     networks:
       - app_network
-
   kafka:
-    image: confluentinc/cp-kafka:7.4.1
+    image: confluentinc/cp-kafka:7.4.4
     container_name: kafka
     depends_on:
       - zookeeper
@@ -61,6 +60,9 @@ services:
       - inventory
       - shipping
       - user
+      - order
+      - payment
+      - product
     ports:
       - "6868:6868"
     networks:
@@ -81,8 +83,8 @@ services:
       SHIPPING_GET_SHIPMENT_STATUS_TOPIC: shipping-get-shipment-status
       PORT: 2223
       CLIENT_HOST: http://localhost:3000
-      CLIENT_ID: shippingService
-      GROUP_ID: shipping-group
+      CLIENT_ID: chptt_gear
+      GROUP_ID: chptt_gear
     depends_on:
       - kafka
     ports:
@@ -105,8 +107,8 @@ services:
       INVENTORY_INVENTORY_ALERT_TOPIC: inventory-inventory-alert
       PORT: 2222
       CLIENT_HOST: http://localhost:3000
-      CLIENT_ID: inventoryService
-      GROUP_ID: inventory-group
+      CLIENT_ID: chptt_gear
+      GROUP_ID: chptt_gear
     depends_on:
       - kafka
     ports:
@@ -144,9 +146,6 @@ services:
       DB_PORT: 5432
       PORT: 3333
       KAFKA_BROKER: kafka:9092
-      ORDER_CREATE_TOPIC: order-create
-      ORDER_UPDATE_STATUS_TOPIC: order-update-status
-      ORDER_CANCEL_TOPIC: order-cancel
       CLIENT_HOST: http://localhost:3000
       CLIENT_ID: orderService
       GROUP_ID: order-group
@@ -156,30 +155,48 @@ services:
       - "3333:3333"
     networks:
       - app_network
+      
+  payment:
+    build: ./paymentService
+    container_name: payment
+    environment:
+      DB_NAME: mixed_chptt
+      DB_USER: sa
+      DB_PASS: SH8mzqwhcaSalLiI1mfhFldqpowgotZP
+      DB_HOST: dpg-ctvnq9jtq21c73agid10-a.singapore-postgres.render.com
+      DB_PORT: 5432
+      PORT: 3334
+      KAFKA_BROKER: kafka:9092
+      CLIENT_HOST: http://localhost:3000
+      CLIENT_ID: payment
+      GROUP_ID: payment-group
+    depends_on:
+      - kafka
+    ports:
+      - "3334:3334"
+    networks:
+      - app_network
 
-payment:
-  build: ./paymentService
-  container_name: payment
-  environment:
-    DB_NAME: mixed_chptt
-    DB_USER: sa
-    DB_PASS: SH8mzqwhcaSalLiI1mfhFldqpowgotZP
-    DB_HOST: dpg-ctvnq9jtq21c73agid10-a.singapore-postgres.render.com
-    DB_PORT: 5432
-    PORT: 3334
-    KAFKA_BROKER: kafka:9092
-    ORDER_CREATE_TOPIC: payment-create
-    ORDER_UPDATE_STATUS_TOPIC: payment-update-status
-    ORDER_CANCEL_TOPIC: payment-cancel
-    CLIENT_HOST: http://localhost:3000
-    CLIENT_ID: paymentService
-    GROUP_ID: payment-group
-  depends_on:
-    - kafka
-  ports:
-    - "3334:3334"
-  networks:
-    - app_network
+  product:
+    build:
+      context: ./productService # Thư mục chứa ứng dụng Java
+      dockerfile: Dockerfile # Tệp Dockerfile
+    container_name: product
+    depends_on:
+      - kafka # Kafka cần chạy trước
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://dpg-cu0tdmd2ng1s73e32250-a.singapore-postgres.render.com:5432/chpttgear
+      SPRING_DATASOURCE_USERNAME: chpttgear_user
+      SPRING_DATASOURCE_PASSWORD: cBUv879D8Rshnxy1eyog0HxePFqPPAXF
+      SPRING_APPLICATION_NAME: productService
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+      SERVER_PORT: 4444 # Đảm bảo rằng server chạy đúng cổng
+    ports:
+      - "4444:4444" # Mở cổng 4444
+    networks:
+      - app_network # Mạng tùy chỉnh để giao tiếp giữa các container
+
 networks:
   app_network:
     driver: bridge
