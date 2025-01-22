@@ -25,7 +25,7 @@ const User = sequelize.define(
             type: DataTypes.STRING
         },
         address: {
-            type: DataTypes.STRING
+            type: DataTypes.TEXT
         },
         phone: {
             type: DataTypes.STRING
