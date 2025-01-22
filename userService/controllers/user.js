@@ -6,14 +6,13 @@ const nodemailer = require('nodemailer')
 const path = require('path')
 const fs = require('fs')
 const JWT = require('jsonwebtoken')
-
+const admin = require('../config/firebase-admin-setup')
+const cloudinary = require('../config/cloudinary');
 const {
     signAccessToken,
     signRefreshToken,
     verifyRefreshToken
 } = require('../middlewares/jwtService')
-const admin = require('../config/firebase-admin-setup')
-const { type } = require('os')
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -21,6 +20,7 @@ const transporter = nodemailer.createTransport({
         pass: 'tzgrtkohlaydvmzx'
     }
 })
+
 const verifyToken = async (req, res) => {
     try {
         console.log('verifyToken');
@@ -509,6 +509,48 @@ const editUserById = async (req, res, next) => {
         res.status(500).json({ message: 'Update user fail' })
     }
 }
+const changeAVT = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const user = await models.User.findByPk(id);
+        console.log(req.file);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({ message: 'No file uploaded' });
+        }
+
+        // Sử dụng upload_stream đúng cách
+        const uploadStream = cloudinary.uploader.upload_stream(
+            {
+                folder: 'avatars',
+                public_id: `AVT_${id}_${Date.now()}`,
+                resource_type: 'image',
+            },
+            async (error, result) => {
+                if (error) {
+                    console.error('Error uploading to Cloudinary:', error);
+                    return res.status(500).json({ message: 'Upload to Cloudinary failed' });
+                }
+
+                await user.update({ avatar: result.secure_url });
+                res.json({
+                    id: user.id,
+                    avatar: result.secure_url,
+                });
+            }
+        );
+
+        uploadStream.end(req.file.buffer); // Gửi buffer lên Cloudinary
+    } catch (error) {
+        console.error('Error processing avatar update:', error);
+        res.status(500).json({ message: 'An error occurred while changing the avatar' });
+    }
+};
+
+
 module.exports = {
     verifyToken,
     signIn,
@@ -522,5 +564,6 @@ module.exports = {
     sendOTP,
     verifyOTP,
     getUserById,
-    editUserById
+    editUserById,
+    changeAVT
 }
