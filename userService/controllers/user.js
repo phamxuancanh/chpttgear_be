@@ -8,6 +8,7 @@ const fs = require('fs')
 const JWT = require('jsonwebtoken')
 const admin = require('../config/firebase-admin-setup')
 const cloudinary = require('../config/cloudinary');
+const { Op } = require('sequelize')
 const {
     signAccessToken,
     signRefreshToken,
@@ -60,23 +61,24 @@ const signIn = async (req, res, next) => {
                 message: 'Email and password are required.'
             })
         }
-        const user = await models.User.findOne({ where: { username } })
+        const user = await models.User.findOne({
+            where: {
+                [Op.or]: [
+                    { username },
+                    { email: username }
+                ]
+            }
+        })
         if (!user) {
             return res.status(401).json({
                 code: 401,
-                message: 'Username is not registered.'
+                message: 'Username or email is not registered.'
             })
         }
         if (user.type === 'google') {
             return res.status(401).json({
                 code: 401,
                 message: 'Please sign in using Google.'
-            })
-        }
-        if (user.type === 'github') {
-            return res.status(401).json({
-                code: 401,
-                message: 'Please sign in using GitHub.'
             })
         }
         const isPasswordValid = bcrypt.compareSync(password, user.password)
@@ -96,14 +98,12 @@ const signIn = async (req, res, next) => {
         const accessToken = await signAccessToken({ userId: user.id })
         let refreshToken = null
 
-        // if (rememberChecked) {
-            refreshToken = await signRefreshToken(user.id)
-            res.cookie('refreshToken', refreshToken, {
-                httpOnly: true,
-                sameSite: 'Strict',
-                maxAge: 30 * 24 * 60 * 60 * 1000
-            })
-        // }
+        refreshToken = await signRefreshToken(user.id)
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            sameSite: 'Strict',
+            maxAge: 30 * 24 * 60 * 60 * 1000
+        })
         const expire = new Date()
         expire.setMonth(expire.getMonth() + 1)
         await models.User.update({ expireRefreshToken: expire }, { where: { id: user.id } })
@@ -132,6 +132,7 @@ const signIn = async (req, res, next) => {
         next(error)
     }
 }
+
 const signUp = async (req, res, next) => {
     console.log('SIGN UP')
     try {
