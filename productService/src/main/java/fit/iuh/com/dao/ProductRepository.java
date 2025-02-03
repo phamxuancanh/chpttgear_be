@@ -8,8 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface ProductDAO extends JpaRepository<Product, UUID> {
-    Product findProductById(UUID id);
+public interface ProductRepository extends JpaRepository<Product, UUID> {
     List<Product> findProductByNameContaining(String productName);
     List<Product> findProductByCategoryNameContaining(String categoryName);
 }

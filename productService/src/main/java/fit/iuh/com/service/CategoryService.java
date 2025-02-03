@@ -1,6 +1,6 @@
 package fit.iuh.com.service;
 
-import fit.iuh.com.dao.CategoryDAO;
+import fit.iuh.com.dao.CategoryRepository;
 import fit.iuh.com.model.Category;
 import org.springframework.stereotype.Service;
 
@@ -9,17 +9,40 @@ import java.util.UUID;
 
 @Service
 public class CategoryService {
-    private CategoryDAO categoryDAO;
+    private final CategoryRepository categoryRepository;
 
-    public CategoryService(CategoryDAO categoryDAO) {
-        this.categoryDAO = categoryDAO;
+    public CategoryService(CategoryRepository categoryRepository) {
+        this.categoryRepository = categoryRepository;
     }
 
     public List<Category> getAllCategories() {
-        return categoryDAO.findAll();
+        return categoryRepository.findAll();
     }
 
     public Category getCategoryById(UUID id){
-        return categoryDAO.findById(id).orElse(null);
+        return categoryRepository.findById(id).orElse(null);
+    }
+
+    public List<Category> getCategoriesByName(String name) {
+        return categoryRepository.findCategoriesByNameContaining(name);
+    }
+
+    public Category createCategory(Category category){
+        return categoryRepository.save(category);
+    }
+
+    public Category updateCategory(Category category, UUID id){
+       if (categoryRepository.findById(id).orElse(null) == null){
+           return null;
+       }
+       return categoryRepository.save(category);
+    }
+
+    public Category deleteCategory(UUID id){
+        Category category = categoryRepository.findById(id).orElse(null);
+        if(category != null){
+            categoryRepository.delete(category);
+        }
+        return category;
     }
 }
