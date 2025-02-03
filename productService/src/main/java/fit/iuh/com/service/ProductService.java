@@ -1,6 +1,6 @@
 package fit.iuh.com.service;
 
-import fit.iuh.com.dao.ProductDAO;
+import fit.iuh.com.dao.ProductRepository;
 import fit.iuh.com.model.Product;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -11,36 +11,44 @@ import java.util.UUID;
 @Service
 @Transactional
 public class ProductService {
-    private ProductDAO productDAO;
+    private final ProductRepository productRepository;
 
-    public ProductService(ProductDAO productDAO) {
-        this.productDAO = productDAO;
+    public ProductService(ProductRepository productRepository) {
+        this.productRepository = productRepository;
     }
 
     public List<Product> getAllProduct() {
-        return productDAO.findAll();
+        return productRepository.findAll();
     }
 
     public Product getProduct(UUID id) {
-        return productDAO.findProductById(id);
+        return productRepository.findById(id).orElse(null);
     }
 
     public Product createProduct(Product product) {
-        return productDAO.save(product);
+        return productRepository.save(product);
     }
 
     public Product updateProduct(Product product, UUID id) {
-        if (productDAO.findProductById(id) == null) {
+        if (productRepository.findById(id).orElse(null) == null) {
             return null;
         }
-        return productDAO.save(product);
+        return productRepository.save(product);
     }
 
-    public List<Product> getAllProductByCategoryName(String name) {
-        return productDAO.findProductByCategoryNameContaining(name);
+    public List<Product> getProductsByCategoryName(String categoryName) {
+        return productRepository.findProductByCategoryNameContaining(categoryName);
     }
 
-    public List<Product> getAllProductByName(String name) {
-        return productDAO.findProductByNameContaining(name);
+    public List<Product> getProductsByName(String productName) {
+        return productRepository.findProductByNameContaining(productName);
+    }
+
+    public Product deleteProduct(UUID id) {
+        Product product = productRepository.findById(id).orElse(null);
+        if (product != null) {
+            productRepository.delete(product);
+        }
+        return product;
     }
 }

@@ -21,7 +21,7 @@ public class CartItemService {
         return cartItemRepository.findAll();
     }
 
-    public CartItem getOneById(UUID id) {
+    public CartItem getById(UUID id) {
         return cartItemRepository.findById(id).orElse(null);
     }
 
@@ -36,9 +36,11 @@ public class CartItemService {
         return null;
     }
 
-    public void deleteOne(UUID id) {
-        if (cartItemRepository.findById(id).isPresent()) {
-            cartItemRepository.deleteById(id);
+    public CartItem deleteOne(UUID id) {
+        CartItem cartItem = cartItemRepository.findById(id).orElse(null);
+        if (cartItem != null) {
+            cartItemRepository.delete(cartItem);
         }
+        return cartItem;
     }
 }
