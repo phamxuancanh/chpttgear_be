@@ -32,11 +32,17 @@ exports.getOrderByUserId = async (req, res) => {
     }
 };
 
-// Create a new order
 exports.createOrder = async (req, res) => {
     const orderData = req.body;
     try {
         const newOrder = await orderService.createOrder(orderData);
+
+        // const emailContext = {
+        //     orderId: newOrder.order_id, 
+        // };
+
+        // await orderService.sendEmail(email, "Xác nhận đơn hàng", "../utils/orderConfirmation.hbs", emailContext);
+
         res.status(201).json(newOrder);
     } catch (error) {
         res.status(500).json({ error: error.message });

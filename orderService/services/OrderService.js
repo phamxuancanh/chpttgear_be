@@ -72,3 +72,27 @@ exports.deleteOrder = async (orderId) => {
         throw new Error('Error deleting order');
     }
 };
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+    },
+});
+
+exports.sendEmail = async (to, subject, templateName, context) => {
+    const filePath = path.join(__dirname, templateName);
+    const source = fs.readFileSync(filePath, 'utf-8');
+    const template = handlebars.compile(source);
+    const html = template(context);
+
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to,
+        subject,
+        html,
+    };
+
+    await transporter.sendMail(mailOptions);
+};
