@@ -33,12 +33,22 @@ public class CartItemController {
 
     @PostMapping("/cart_items")
     public CartItem createCartItem(@RequestBody CartItem cartItem) {
-        return cartItemService.createOne(cartItem);
+        int maxQuantity = 1000;
+        if (cartItem.getQuantity() < 0 && cartItem.getQuantity() > maxQuantity) {
+            return null;
+        } else {
+            return cartItemService.createOne(cartItem);
+        }
     }
 
     @PutMapping("/cart_items/{id}")
     public CartItem updateCartItem(@RequestBody CartItem cartItem, @PathVariable UUID id) {
-        return cartItemService.updateOne(cartItem, id);
+        int maxQuantity = 1000;
+        if (cartItem.getQuantity() < 0 && cartItem.getQuantity() > maxQuantity) {
+            return null;
+        } else {
+            return cartItemService.updateOne(cartItem, id);
+        }
     }
 
     @DeleteMapping("/cart_items/{id}")
