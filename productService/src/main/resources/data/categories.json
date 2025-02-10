@@ -1,0 +1,27 @@
+[
+  {
+    "id": "1e4f2a3b-45cd-4d9f-8a2b-6d3e5c4a2f1e",
+    "name": "Laptops",
+    "description": "Các dòng laptop từ phổ thông đến cao cấp"
+  },
+  {
+    "id": "2d6f3b2a-67ef-4b8f-9d3c-7f4e6a5b3c2d",
+    "name": "PC Gaming",
+    "description": "Máy tính bàn chuyên game, cấu hình cao"
+  },
+  {
+    "id": "3c7e4a5d-89fd-4c6b-9e4d-8f5e7a6c4b3e",
+    "name": "Linh kiện PC",
+    "description": "Linh kiện máy tính bao gồm CPU, GPU, RAM, PSU, SSD, HDD..."
+  },
+  {
+    "id": "f9c6e44a-82fd-4c5b-9e3d-7f4e5a6c3b2e",
+    "name": "Phụ kiện máy tính",
+    "description": "Chuột, bàn phím, tai nghe, màn hình, tản nhiệt"
+  },
+  {
+    "id": "f8b7d6a-92fa-4d6c-b3a5-9f7e8c6d5b4f",
+    "name": "Workstation",
+    "description": "Máy tính chuyên dụng cho đồ họa, kỹ thuật, lập trình"
+  }
+]

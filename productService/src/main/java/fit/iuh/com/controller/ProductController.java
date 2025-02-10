@@ -2,10 +2,14 @@ package fit.iuh.com.controller;
 
 import fit.iuh.com.model.Product;
 import fit.iuh.com.service.ProductService;
+import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.UUID;
+import java.time.LocalDate;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -17,16 +21,31 @@ public class ProductController {
         this.productService = productService;
     }
 
-    @GetMapping("/products")
-    public List<Product> getAllProduct(){
-        return productService.getAllProduct();
+    //    @GetMapping("/products")
+//    public List<Product> getAllProduct(){
+//        return productService.getAllProducts();
+//    }
+    @GetMapping("/searchProducts")
+    public ResponseEntity<Map<String, Object>> getMyProducts(@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "8") int size, @RequestParam(required = false) String search, @RequestParam(required = false) String category) {
+        try {
+            Page<Product> productPage = productService.getProductsPaged(page, size, search, category);
+            Map<String, Object> response = new HashMap<>();
+            response.put("page", page);
+            response.put("size", size);
+            response.put("totalRecords", productPage.getTotalElements());
+            response.put("data", productPage.getContent());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", "Đã xảy ra lỗi khi lấy danh sách sản phẩm."));
+        }
     }
 
-
     @GetMapping("/products/{id}")
-    public Product getProductById(@PathVariable UUID id){
+    public Product getProductById(@PathVariable UUID id) {
+        System.out.println("chay vao 2");
         Product product = productService.getProduct(id);
-        if(product == null){
+        if (product == null) {
             return null;
         } else {
             return product;
@@ -34,13 +53,13 @@ public class ProductController {
     }
 
     @PostMapping("/products")
-    public Product createProduct(@RequestBody Product product){
+    public Product createProduct(@RequestBody Product product) {
         System.out.println("test create");
         return productService.createProduct(product);
     }
 
     @PostMapping("/products/{id}")
-    public Product updateProduct(@RequestBody Product product, @PathVariable UUID id){
+    public Product updateProduct(@RequestBody Product product, @PathVariable UUID id) {
         return productService.updateProduct(product, id);
     }
 

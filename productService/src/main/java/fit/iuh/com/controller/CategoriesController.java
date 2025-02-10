@@ -37,4 +37,6 @@ public class CategoriesController {
     public Category getCategoryById(@PathVariable UUID id) {
         return categoryService.getCategoryById(id);
     }
+
+
 }

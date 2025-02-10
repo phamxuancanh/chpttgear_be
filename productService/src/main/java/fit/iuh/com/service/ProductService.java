@@ -3,21 +3,25 @@ package fit.iuh.com.service;
 import fit.iuh.com.dao.ProductDAO;
 import fit.iuh.com.model.Product;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @Transactional
 public class ProductService {
-    private ProductDAO productDAO;
+    private final ProductDAO productDAO;
 
     public ProductService(ProductDAO productDAO) {
         this.productDAO = productDAO;
     }
 
-    public List<Product> getAllProduct() {
+    public List<Product> getAllProducts() {
         return productDAO.findAll();
     }
 
@@ -35,12 +39,11 @@ public class ProductService {
         }
         return productDAO.save(product);
     }
-
-    public List<Product> getAllProductByCategoryName(String name) {
-        return productDAO.findProductByCategoryNameContaining(name);
+    public Page<Product> getProductsPaged(int page, int size, String search, String category) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        System.out.println(search);
+        System.out.println(category);
+        return productDAO.searchProducts(search, category, pageable);
     }
 
-    public List<Product> getAllProductByName(String name) {
-        return productDAO.findProductByNameContaining(name);
-    }
 }

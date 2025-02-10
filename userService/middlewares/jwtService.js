@@ -5,7 +5,7 @@ const { models } = require('../models')
 const signAccessToken = async (payload) => {
   const secret = process.env.ACCESS_TOKEN_SECRET
   const options = {
-    expiresIn: '5h' // Thay đổi từ '20s' thành '5h'
+    expiresIn: '5h'
   }
   console.log('payload', payload)
   const userId = payload.userId
@@ -19,7 +19,7 @@ const signAccessToken = async (payload) => {
     console.log('userId', userId)
     const user = await models.User.findByPk(userId)
     user.accessToken = token
-    user.expireAccessToken = new Date(Date.now() + 5 * 60 * 60 * 1000) // 5 giờ
+    user.expireAccessToken = new Date(Date.now() + 5 * 60 * 60 * 1000)
     await user.save()
 
     return token
