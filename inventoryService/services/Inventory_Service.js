@@ -6,7 +6,7 @@ const PurchaseOrder = models.Purchase_Order;
 const PurchaseOrderDetail = models.Purchase_Order_Detail;
 
 const kafka = new Kafka({
-  clientId: process.env.CLIENT_ID,
+  clientId: process.env.CLIENT_ID || "chptt_gear",
   brokers: [process.env.KAFKA_BROKER || "kafka:9092"],
 });
 
@@ -24,6 +24,8 @@ const createInventory = async (data) => {
     };
 
     await producer.connect();
+
+    // Gửi thông điệp tới topic "shipping-update-quantity"
     await producer.send({
       topic: "shipping-update-quantity", // Gửi tới topic shipping-update-quantity
       messages: [message],
@@ -116,6 +118,30 @@ const deleteInventory = async (inventory_id) => {
   }
 };
 
+const updateInventoryQuantity = async (product_id, quantity) => {
+  try {
+    const inventoryItem = await Inventory.findOne({
+      where: { inventory_id: product_id },
+    });
+
+    if (!inventoryItem) {
+      throw new Error("Product not found in inventory");
+    }
+
+    // Trừ số lượng sản phẩm đã đặt hàng
+    inventoryItem.quantity_in_stock += quantity;
+
+    if (inventoryItem.quantity_in_stock < 0) {
+      throw new Error("Not enough stock available");
+    }
+
+    await inventoryItem.save();
+    return inventoryItem;
+  } catch (error) {
+    throw new Error(`Error updating inventory quantity: ${error.message}`);
+  }
+};
+
 module.exports = {
   createInventory,
   getAllInventory,
@@ -123,4 +149,5 @@ module.exports = {
   updateInventory,
   deleteInventory,
   getAllProductInInventory,
+  updateInventoryQuantity,
 };

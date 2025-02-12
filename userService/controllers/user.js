@@ -6,14 +6,14 @@ const nodemailer = require('nodemailer')
 const path = require('path')
 const fs = require('fs')
 const JWT = require('jsonwebtoken')
-
+const admin = require('../config/firebase-admin-setup')
+const cloudinary = require('../config/cloudinary');
+const { Op } = require('sequelize')
 const {
     signAccessToken,
     signRefreshToken,
     verifyRefreshToken
 } = require('../middlewares/jwtService')
-const admin = require('../config/firebase-admin-setup')
-const { type } = require('os')
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -21,6 +21,7 @@ const transporter = nodemailer.createTransport({
         pass: 'tzgrtkohlaydvmzx'
     }
 })
+
 const verifyToken = async (req, res) => {
     try {
         console.log('verifyToken');
@@ -60,23 +61,24 @@ const signIn = async (req, res, next) => {
                 message: 'Email and password are required.'
             })
         }
-        const user = await models.User.findOne({ where: { username } })
+        const user = await models.User.findOne({
+            where: {
+                [Op.or]: [
+                    { username },
+                    { email: username }
+                ]
+            }
+        })
         if (!user) {
             return res.status(401).json({
                 code: 401,
-                message: 'Username is not registered.'
+                message: 'Username or email is not registered.'
             })
         }
         if (user.type === 'google') {
             return res.status(401).json({
                 code: 401,
                 message: 'Please sign in using Google.'
-            })
-        }
-        if (user.type === 'github') {
-            return res.status(401).json({
-                code: 401,
-                message: 'Please sign in using GitHub.'
             })
         }
         const isPasswordValid = bcrypt.compareSync(password, user.password)
@@ -96,14 +98,12 @@ const signIn = async (req, res, next) => {
         const accessToken = await signAccessToken({ userId: user.id })
         let refreshToken = null
 
-        // if (rememberChecked) {
-            refreshToken = await signRefreshToken(user.id)
-            res.cookie('refreshToken', refreshToken, {
-                httpOnly: true,
-                sameSite: 'Strict',
-                maxAge: 30 * 24 * 60 * 60 * 1000
-            })
-        // }
+        refreshToken = await signRefreshToken(user.id)
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            sameSite: 'Strict',
+            maxAge: 30 * 24 * 60 * 60 * 1000
+        })
         const expire = new Date()
         expire.setMonth(expire.getMonth() + 1)
         await models.User.update({ expireRefreshToken: expire }, { where: { id: user.id } })
@@ -132,6 +132,7 @@ const signIn = async (req, res, next) => {
         next(error)
     }
 }
+
 const signUp = async (req, res, next) => {
     console.log('SIGN UP')
     try {
@@ -509,6 +510,48 @@ const editUserById = async (req, res, next) => {
         res.status(500).json({ message: 'Update user fail' })
     }
 }
+const changeAVT = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const user = await models.User.findByPk(id);
+        console.log(req.file);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({ message: 'No file uploaded' });
+        }
+
+        // Sử dụng upload_stream đúng cách
+        const uploadStream = cloudinary.uploader.upload_stream(
+            {
+                folder: 'avatars',
+                public_id: `AVT_${id}_${Date.now()}`,
+                resource_type: 'image',
+            },
+            async (error, result) => {
+                if (error) {
+                    console.error('Error uploading to Cloudinary:', error);
+                    return res.status(500).json({ message: 'Upload to Cloudinary failed' });
+                }
+
+                await user.update({ avatar: result.secure_url });
+                res.json({
+                    id: user.id,
+                    avatar: result.secure_url,
+                });
+            }
+        );
+
+        uploadStream.end(req.file.buffer); // Gửi buffer lên Cloudinary
+    } catch (error) {
+        console.error('Error processing avatar update:', error);
+        res.status(500).json({ message: 'An error occurred while changing the avatar' });
+    }
+};
+
+
 module.exports = {
     verifyToken,
     signIn,
@@ -522,5 +565,6 @@ module.exports = {
     sendOTP,
     verifyOTP,
     getUserById,
-    editUserById
+    editUserById,
+    changeAVT
 }
