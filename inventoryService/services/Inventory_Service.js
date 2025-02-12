@@ -118,6 +118,30 @@ const deleteInventory = async (inventory_id) => {
   }
 };
 
+const updateInventoryQuantity = async (product_id, quantity) => {
+  try {
+    const inventoryItem = await Inventory.findOne({
+      where: { inventory_id: product_id },
+    });
+
+    if (!inventoryItem) {
+      throw new Error("Product not found in inventory");
+    }
+
+    // Trừ số lượng sản phẩm đã đặt hàng
+    inventoryItem.quantity_in_stock += quantity;
+
+    if (inventoryItem.quantity_in_stock < 0) {
+      throw new Error("Not enough stock available");
+    }
+
+    await inventoryItem.save();
+    return inventoryItem;
+  } catch (error) {
+    throw new Error(`Error updating inventory quantity: ${error.message}`);
+  }
+};
+
 module.exports = {
   createInventory,
   getAllInventory,
@@ -125,4 +149,5 @@ module.exports = {
   updateInventory,
   deleteInventory,
   getAllProductInInventory,
+  updateInventoryQuantity,
 };
