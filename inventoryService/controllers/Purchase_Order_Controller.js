@@ -10,6 +10,7 @@ const createPurchaseOrder = async (req, res) => {
 };
 
 const getAllPurchaseOrders = async (req, res) => {
+  console.log("lấy hết");
   try {
     const purchaseOrders = await purchaseOrderService.getAllPurchaseOrders();
     res.status(200).json(purchaseOrders);
@@ -29,24 +30,12 @@ const getPurchaseOrderById = async (req, res) => {
   }
 };
 
-const updatePurchaseOrderStatus = async (req, res) => {
+const getPurchaseOrderByProductId = async (req, res) => {
   try {
-    const order = await purchaseOrderService.updatePurchaseOrderStatus(
-      req.params.id,
-      req.body.status
-    );
-    res.status(200).json(order);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};
-
-const deletePurchaseOrder = async (req, res) => {
-  try {
-    const result = await purchaseOrderService.deletePurchaseOrder(
+    const order = await purchaseOrderService.getPurchaseOrderByProductId(
       req.params.id
     );
-    res.status(200).json(result);
+    res.status(200).json(order);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -56,6 +45,5 @@ module.exports = {
   createPurchaseOrder,
   getAllPurchaseOrders,
   getPurchaseOrderById,
-  updatePurchaseOrderStatus,
-  deletePurchaseOrder,
+  getPurchaseOrderByProductId,
 };
