@@ -1,9 +1,9 @@
-const orderService = require("../services/OrderService");
+const { OrderService } = require("../services/");
 
 // Get all orders
 exports.getAllOrders = async (req, res) => {
   try {
-    const orders = await orderService.getAllOrders();
+    const orders = await OrderService.getAllOrders();
     res.status(200).json(orders);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -14,7 +14,7 @@ exports.getAllOrders = async (req, res) => {
 exports.getOrderById = async (req, res) => {
   const { orderId } = req.params;
   try {
-    const order = await orderService.getOrderById(orderId);
+    const order = await OrderService.getOrderById(orderId);
     res.status(200).json(order);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -25,7 +25,7 @@ exports.getOrderById = async (req, res) => {
 exports.getOrderByUserId = async (req, res) => {
   const { userId } = req.params;
   try {
-    const orders = await orderService.getOrderByUserId(userId);
+    const orders = await OrderService.getOrderByUserId(userId);
     res.status(200).json(orders);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -36,7 +36,7 @@ exports.getOrderByUserId = async (req, res) => {
 exports.createOrder = async (req, res) => {
   const orderData = req.body;
   try {
-    const newOrder = await orderService.createOrder(orderData);
+    const newOrder = await OrderService.createOrder(orderData);
     res.status(201).json(newOrder);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -48,7 +48,7 @@ exports.updateOrder = async (req, res) => {
   const { orderId } = req.params;
   const orderData = req.body;
   try {
-    const updatedOrder = await orderService.updateOrder(orderId, orderData);
+    const updatedOrder = await OrderService.updateOrder(orderId, orderData);
     res.status(200).json(updatedOrder);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -59,7 +59,7 @@ exports.updateOrder = async (req, res) => {
 exports.deleteOrder = async (req, res) => {
   const { orderId } = req.params;
   try {
-    const result = await orderService.deleteOrder(orderId);
+    const result = await OrderService.deleteOrder(orderId);
     res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
