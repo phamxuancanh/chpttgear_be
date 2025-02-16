@@ -25,4 +25,9 @@ public interface ProductDAO extends JpaRepository<Product, UUID> {
             Pageable pageable
     );
 
+    @Query("SELECT p FROM Product p WHERE " +
+            "(:name IS NULL OR LOWER(CAST(p.name AS string)) LIKE LOWER(CONCAT('%', CAST(:name AS string), '%'))) " +
+            "ORDER BY p.id ASC")
+    List<Product> suggestProducts(@Param("name") String name);
+
 }

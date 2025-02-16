@@ -1,11 +1,10 @@
 package fit.iuh.com.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UuidGenerator;
-import org.springframework.lang.Nullable;
 
 import java.util.List;
 import java.util.UUID;
@@ -28,6 +27,7 @@ public class Category {
     @Column(columnDefinition = "TEXT")
     private String description;
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Product> productList;
     @Override
     public String toString() {
@@ -71,10 +71,4 @@ public class Category {
         this.productList = productList;
     }
 
-    public Category(UUID id, String name, String description, List<Product> productList) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.productList = productList;
-    }
 }

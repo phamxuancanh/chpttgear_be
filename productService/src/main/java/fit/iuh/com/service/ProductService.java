@@ -41,9 +41,10 @@ public class ProductService {
     }
     public Page<Product> getProductsPaged(int page, int size, String search, String category) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        System.out.println(search);
-        System.out.println(category);
         return productDAO.searchProducts(search, category, pageable);
+    }
+    public List<Product> getSuggestions(String search) {
+        return productDAO.suggestProducts(search);
     }
 
 }

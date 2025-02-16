@@ -3,12 +3,10 @@ package fit.iuh.com.controller;
 import fit.iuh.com.model.Product;
 import fit.iuh.com.service.ProductService;
 import org.springframework.data.domain.Page;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.*;
 
 @RestController
@@ -21,11 +19,7 @@ public class ProductController {
         this.productService = productService;
     }
 
-    //    @GetMapping("/products")
-//    public List<Product> getAllProduct(){
-//        return productService.getAllProducts();
-//    }
-    @GetMapping("/searchProducts")
+    @GetMapping("/products/searchProducts")
     public ResponseEntity<Map<String, Object>> getMyProducts(@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "8") int size, @RequestParam(required = false) String search, @RequestParam(required = false) String category) {
         try {
             Page<Product> productPage = productService.getProductsPaged(page, size, search, category);
@@ -40,8 +34,12 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", "Đã xảy ra lỗi khi lấy danh sách sản phẩm."));
         }
     }
-
-    @GetMapping("/products/{id}")
+    @GetMapping("products/getSuggestions")
+    public ResponseEntity<List<Product>> getSuggestions(@RequestParam(required = false) String search) {
+        List<Product> suggestions = productService.getSuggestions(search);
+        return ResponseEntity.ok(suggestions);
+    }
+    @GetMapping("/products/findById/{id}")
     public Product getProductById(@PathVariable UUID id) {
         System.out.println("chay vao 2");
         Product product = productService.getProduct(id);
