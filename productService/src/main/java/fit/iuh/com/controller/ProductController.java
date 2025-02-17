@@ -34,6 +34,11 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", "Đã xảy ra lỗi khi lấy danh sách sản phẩm."));
         }
     }
+    @GetMapping("/products/findByIds")
+    public ResponseEntity<List<Product>> getProducts(@RequestParam List<String> productIds) {
+        List<Product> products = productService.getProductsByIds(productIds);
+        return ResponseEntity.ok(products);
+    }
     @GetMapping("products/getSuggestions")
     public ResponseEntity<List<Product>> getSuggestions(@RequestParam(required = false) String search) {
         List<Product> suggestions = productService.getSuggestions(search);

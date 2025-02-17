@@ -46,5 +46,7 @@ public class ProductService {
     public List<Product> getSuggestions(String search) {
         return productDAO.suggestProducts(search);
     }
-
+    public List<Product> getProductsByIds(List<String> productIds) {
+        return productDAO.findProductsByListIds(productIds);
+    }
 }

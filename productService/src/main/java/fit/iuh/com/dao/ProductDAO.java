@@ -30,4 +30,6 @@ public interface ProductDAO extends JpaRepository<Product, UUID> {
             "ORDER BY p.id ASC")
     List<Product> suggestProducts(@Param("name") String name);
 
+    @Query("SELECT p FROM Product p WHERE p.id IN :productIds ORDER BY p.id ASC")
+    List<Product> findProductsByListIds(@Param("productIds") List<String> productIds);
 }

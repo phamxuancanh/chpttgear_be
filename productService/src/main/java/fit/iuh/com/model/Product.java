@@ -49,8 +49,6 @@ public class Product {
     private int guaranteePeriod;
     @Column(columnDefinition = "TIMESTAMP")
     private LocalDateTime modifiedDate;
-    @Column(columnDefinition = "UUID")
-    private UUID inventory_id;
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id", columnDefinition = "UUID")
     @JsonIgnoreProperties("productList")
@@ -74,7 +72,6 @@ public class Product {
                 ", weight=" + weight +
                 ", guaranteePeriod=" + guaranteePeriod +
                 ", modifiedDate=" + modifiedDate +
-                ", inventory_id=" + inventory_id +
                 ", category=" + category +
                 ", specifications=" + specifications +
                 '}';
