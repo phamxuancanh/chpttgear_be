@@ -1,6 +1,6 @@
 package fit.iuh.com.service;
 
-import fit.iuh.com.dao.ProductDAO;
+import fit.iuh.com.dao.ProductRepository;
 import fit.iuh.com.model.Product;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
@@ -15,38 +15,38 @@ import java.util.UUID;
 @Service
 @Transactional
 public class ProductService {
-    private final ProductDAO productDAO;
+    private final ProductRepository productRepository;
 
-    public ProductService(ProductDAO productDAO) {
-        this.productDAO = productDAO;
+    public ProductService(ProductRepository productRepository) {
+        this.productRepository = productRepository;
     }
 
     public List<Product> getAllProducts() {
-        return productDAO.findAll();
+        return productRepository.findAll();
     }
 
     public Product getProduct(UUID id) {
-        return productDAO.findProductById(id);
+        return productRepository.findProductById(id);
     }
 
     public Product createProduct(Product product) {
-        return productDAO.save(product);
+        return productRepository.save(product);
     }
 
     public Product updateProduct(Product product, UUID id) {
-        if (productDAO.findProductById(id) == null) {
+        if (productRepository.findProductById(id) == null) {
             return null;
         }
-        return productDAO.save(product);
+        return productRepository.save(product);
     }
     public Page<Product> getProductsPaged(int page, int size, String search, String category) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        return productDAO.searchProducts(search, category, pageable);
+        return productRepository.searchProducts(search, category, pageable);
     }
     public List<Product> getSuggestions(String search) {
-        return productDAO.suggestProducts(search);
+        return productRepository.suggestProducts(search);
     }
     public List<Product> getProductsByIds(List<String> productIds) {
-        return productDAO.findProductsByListIds(productIds);
+        return productRepository.findProductsByListIds(productIds);
     }
 }

@@ -21,7 +21,7 @@ public class CartService {
         return cartRepository.findAll();
     }
 
-    public Cart getOneById(UUID id) {
+    public Cart getById(UUID id) {
         return cartRepository.findById(id).orElse(null);
     }
 
@@ -34,5 +34,13 @@ public class CartService {
             return cartRepository.save(cart);
         }
         return null;
+    }
+
+    public Cart deleteOne(UUID id) {
+        Cart cart = cartRepository.findById(id).orElse(null);
+        if (cart != null) {
+            cartRepository.delete(cart);
+        }
+        return cart;
     }
 }

@@ -1,10 +1,7 @@
 package fit.iuh.com.controller;
 
-import fit.iuh.com.model.Cart;
 import fit.iuh.com.model.CartItem;
-import fit.iuh.com.repository.CartItemRepository;
 import fit.iuh.com.service.CartItemService;
-import fit.iuh.com.service.CartService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,7 +12,7 @@ import java.util.UUID;
 public class CartItemController {
     private final CartItemService cartItemService;
 
-    public CartItemController(CartItemService cartItemService, CartService cartService) {
+    public CartItemController(CartItemService cartItemService) {
         this.cartItemService = cartItemService;
     }
 
@@ -26,7 +23,7 @@ public class CartItemController {
 
     @GetMapping("/cart_items/{id}")
     public CartItem getCartItemById(@PathVariable UUID id) {
-        CartItem cartItem = cartItemService.getOneById(id);
+        CartItem cartItem = cartItemService.getById(id);
         if (cartItem == null) {
             return null;
         } else {
@@ -36,11 +33,26 @@ public class CartItemController {
 
     @PostMapping("/cart_items")
     public CartItem createCartItem(@RequestBody CartItem cartItem) {
-        return cartItemService.createOne(cartItem);
+        int maxQuantity = 1000;
+        if (cartItem.getQuantity() < 0 && cartItem.getQuantity() > maxQuantity) {
+            return null;
+        } else {
+            return cartItemService.createOne(cartItem);
+        }
     }
 
-    @PostMapping("/cart_items/{id}")
+    @PutMapping("/cart_items/{id}")
     public CartItem updateCartItem(@RequestBody CartItem cartItem, @PathVariable UUID id) {
-        return cartItemService.updateOne(cartItem, id);
+        int maxQuantity = 1000;
+        if (cartItem.getQuantity() < 0 && cartItem.getQuantity() > maxQuantity) {
+            return null;
+        } else {
+            return cartItemService.updateOne(cartItem, id);
+        }
+    }
+
+    @DeleteMapping("/cart_items/{id}")
+    public CartItem deleteCartItem(@PathVariable UUID id) {
+        return cartItemService.deleteOne(id);
     }
 }

@@ -1,7 +1,7 @@
 package fit.iuh.com.controller;
 
 import fit.iuh.com.model.Cart;
-import fit.iuh.com.repository.CartItemRepository;
+import fit.iuh.com.model.CartItem;
 import fit.iuh.com.service.CartService;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,8 +23,8 @@ public class CartController {
     }
 
     @GetMapping("/carts/{id}")
-    public Cart getCart (@PathVariable UUID id) {
-        Cart cart = cartService.getOneById(id);
+    public Cart getCartById (@PathVariable UUID id) {
+        Cart cart = cartService.getById(id);
         if (cart == null) {
             return null;
         } else {
@@ -37,8 +37,13 @@ public class CartController {
         return cartService.createOne(cart);
     }
 
-    @PostMapping("/carts/{id}")
+    @PutMapping("/carts/{id}")
     public Cart updateCart(@RequestBody Cart cart, @PathVariable UUID id) {
         return cartService.updateOne(cart, id);
+    }
+
+    @DeleteMapping("/carts/{id}")
+    public Cart deleteCart(@PathVariable UUID id) {
+        return cartService.deleteOne(id);
     }
 }

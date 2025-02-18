@@ -16,11 +16,34 @@ public class Review_Service {
         this.review_DAO = review_DAO;
     }
 
-    public List<Review> getAllReviews() {
+    public List<Review> getAll() {
         return review_DAO.findAll();
     }
 
-    public Review getReviewById(UUID id) {
+    public Review getById(UUID id) {
         return review_DAO.findReviewById(id);
+    }
+
+    public Review createOne(Review review) {
+        return review_DAO.save(review);
+    }
+
+    public Review updateOne(Review review, UUID id) {
+        Review updatedReview = review_DAO.findReviewById(id);
+        if(updatedReview == null){
+            return null;
+        } else {
+            return review_DAO.save(review);
+        }
+    }
+
+    public Review deleteOne(UUID id) {
+        Review review = review_DAO.findReviewById(id);
+        if(review == null){
+            return null;
+        } else {
+            review_DAO.delete(review);
+            return review;
+        }
     }
 }

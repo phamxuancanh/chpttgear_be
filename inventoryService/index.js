@@ -4,15 +4,16 @@ const { initSequelize } = require("./models");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const inventoryRoute = require("./routes/Inventory_Route");
-const purchaseOrderRoute = require("./routes/Purchase_Order_Route");
-const purchaseOrderDetailRoute = require("./routes/Purchase_Order_Detail_Route");
+const stockInRoutes = require("./routes/Stock_In_Route");
+const stockOutRoutes = require("./routes/Stock_Out_Route");
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: "*",
+    origin: "http://localhost:3000",
+    credentials: true,
   })
 );
 app.use(bodyParser.json());
@@ -21,7 +22,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Middleware
 app.use(express.json());
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
   res.setHeader(
     "Access-Control-Allow-Headers",
     "X-Requested-With,content-type, Authorization"
@@ -37,8 +38,8 @@ app.use((req, res, next) => {
 });
 // Routes
 app.use("/api/v1/inventory", inventoryRoute);
-app.use("/api/v1/purchase-orders", purchaseOrderRoute);
-app.use("/api/v1/purchase-order-details", purchaseOrderDetailRoute);
+app.use("/api/v1/inventory/stock-in", stockInRoutes);
+app.use("/api/v1/inventory/stock-out", stockOutRoutes);
 
 // Khởi tạo cơ sở dữ liệu và bắt đầu server
 async function main() {

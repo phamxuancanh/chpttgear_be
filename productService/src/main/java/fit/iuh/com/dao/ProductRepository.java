@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface ProductDAO extends JpaRepository<Product, UUID> {
+public interface ProductRepository extends JpaRepository<Product, UUID> {
     Product findProductById(UUID id);
 
     @Query("SELECT p FROM Product p WHERE " +

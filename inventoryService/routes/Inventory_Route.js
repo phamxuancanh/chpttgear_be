@@ -12,5 +12,8 @@ router.get(
   "/:inventory_id/products",
   inventoryController.getAllProductInInventory
 );
+router.put("/:inventory_id/increase", inventoryController.increaseStock);
+router.put("/:inventory_id/decrease", inventoryController.decreaseStock);
+router.post("/:product_id/check-stock", inventoryController.checkStock);
 
 module.exports = router;

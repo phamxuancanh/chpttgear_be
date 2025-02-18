@@ -60,14 +60,66 @@ const deleteInventory = async (req, res) => {
 
 const getAllProductInInventory = async (req, res) => {
   try {
-    const { inventory_id } = req.params;
-    const products = await inventoryService.getAllProductInInventory(
-      inventory_id
+    const inventoryId = req.params.inventory_id;
+
+    const productIds = await inventoryService.getAllProductInInventory(
+      inventoryId
     );
-    res.status(200).json(products);
+
+    res.status(200).json({
+      success: true,
+      data: productIds,
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Error fetching product_ids",
+    });
   }
+};
+
+// Tăng tồn kho (Stock In)
+const increaseStock = async (req, res) => {
+  try {
+    const data = await inventoryService.increaseStock(
+      req.params.inventory_id,
+      req.body.quantity
+    );
+    data
+      ? res.json(data)
+      : res.status(404).json({ message: "Product not found" });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// Giảm tồn kho (Stock Out)
+const decreaseStock = async (req, res) => {
+  try {
+    const data = await inventoryService.decreaseStock(
+      req.params.inventory_id,
+      req.body.quantity
+    );
+    data
+      ? res.json(data)
+      : res
+          .status(404)
+          .json({ message: "Product not found or not enough stock" });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+const checkStock = async (req, res) => {
+  const { product_id } = req.params;
+  const { quantity } = req.body;
+
+  if (!quantity || quantity <= 0) {
+    return res.status(400).json({ message: "Invalid quantity" });
+  }
+
+  const result = await inventoryService.checkStock(product_id, quantity);
+  res.json(result);
 };
 
 module.exports = {
@@ -77,4 +129,7 @@ module.exports = {
   updateInventory,
   deleteInventory,
   getAllProductInInventory,
+  decreaseStock,
+  increaseStock,
+  checkStock,
 };

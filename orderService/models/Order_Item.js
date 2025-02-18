@@ -13,7 +13,7 @@ const OrderItem = sequelize.define('OrderItem', {
         type: DataTypes.UUID,
         allowNull: false,
         references: {
-            model: "order",
+            model: "orders",
             key: 'order_id',
         },
         onDelete: 'CASCADE',
@@ -38,7 +38,7 @@ const OrderItem = sequelize.define('OrderItem', {
         defaultValue: 0.0,
     },
 }, {
-    tableName: 'order_item',
+    tableName: 'order_items',
     timestamps: true,
     updatedAt: "updatedAt",
     createdAt: "createdAt",

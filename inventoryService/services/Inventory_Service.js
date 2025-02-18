@@ -2,8 +2,8 @@ const { Kafka } = require("kafkajs");
 const { models } = require("../models"); // Import model Inventory
 const Inventory = models.Inventory; // Lấy model Inventory
 const { Op } = require("sequelize");
-const PurchaseOrder = models.Purchase_Order;
-const PurchaseOrderDetail = models.Purchase_Order_Detail;
+const Stock_In = require("../models/Stock_In");
+const sequelize = require("../configs/database");
 
 const kafka = new Kafka({
   clientId: process.env.CLIENT_ID || "chptt_gear",
@@ -40,30 +40,23 @@ const createInventory = async (data) => {
   }
 };
 
-const getAllProductInInventory = async (inventory_id) => {
+const getAllProductInInventory = async (inventoryId) => {
   try {
-    // Lấy thông tin các đơn hàng từ Inventory
-    const purchaseOrders = await PurchaseOrder.findAll({
-      where: { inventory_id: inventory_id },
-      include: [
-        {
-          model: PurchaseOrderDetail,
-          include: ["Product"], // Nếu Product là một model riêng biệt và có quan hệ với PurchaseOrderDetail
-        },
-      ],
+    // Lấy danh sách product_id duy nhất từ bảng Stock_In
+    const stockInRecords = await Stock_In.findAll({
+      where: { inventory_id: inventoryId },
+      attributes: [
+        [sequelize.fn("DISTINCT", sequelize.col("product_id")), "product_id"],
+      ], // Sử dụng DISTINCT để loại bỏ trùng lặp
     });
 
-    // Tạo một mảng chứa các sản phẩm (Product) từ các chi tiết đơn hàng
-    const productsInInventory = [];
-    purchaseOrders.forEach((order) => {
-      order.PurchaseOrderDetails.forEach((detail) => {
-        productsInInventory.push(detail.Product); // Lấy sản phẩm từ PurchaseOrderDetail
-      });
-    });
+    // Lấy danh sách product_id
+    const productIds = stockInRecords.map((record) => record.product_id);
 
-    return productsInInventory;
+    return productIds;
   } catch (error) {
-    throw new Error(`Error fetching products in inventory: ${error.message}`);
+    console.error("Error fetching product_ids:", error);
+    throw error;
   }
 };
 
@@ -118,6 +111,79 @@ const deleteInventory = async (inventory_id) => {
   }
 };
 
+const updateInventoryQuantity = async (inventory_id, flag, quantity) => {
+  try {
+    const inventoryItem = await Inventory.findOne({
+      where: { inventory_id: inventory_id },
+    });
+
+    if (!inventoryItem) {
+      throw new Error("Product not found in inventory");
+    }
+
+    // Trừ số lượng sản phẩm đã đặt hàng
+    inventoryItem.quantity_in_stock =
+      inventoryItem.quantity_in_stock + quantity * flag;
+
+    if (inventoryItem.quantity_in_stock < 0) {
+      throw new Error("Not enough stock available");
+    }
+
+    await inventoryItem.save();
+    return inventoryItem;
+  } catch (error) {
+    throw new Error(`Error updating inventory quantity: ${error.message}`);
+  }
+};
+
+// Cập nhật số lượng tồn kho khi có Stock In
+const increaseStock = async (inventory_id, quantity) => {
+  const inventory = await Inventory.findOne({ where: { inventory_id } });
+  if (!inventory) return null;
+
+  console.log(inventory);
+  console.log(quantity);
+
+  inventory.quantity_in_stock += quantity;
+  await inventory.save();
+  return inventory;
+};
+
+// Cập nhật số lượng tồn kho khi có Stock Out
+const decreaseStock = async (inventory_id, quantity) => {
+  const inventory = await Inventory.findOne({ where: { inventory_id } });
+  if (!inventory) return null;
+
+  if (inventory.quantity < quantity) {
+    throw new Error("Not enough stock available");
+  }
+
+  inventory.quantity -= quantity;
+  await inventory.save();
+  return inventory;
+};
+
+const checkStock = async (product_id, quantity) => {
+  const inventory = await Inventory.findOne({ where: { product_id } });
+  if (!inventory) {
+    return { available: false, message: "Product not found" };
+  }
+
+  if (inventory.quantity >= quantity) {
+    return {
+      available: true,
+      message: "Stock available",
+      stock: inventory.quantity,
+    };
+  } else {
+    return {
+      available: false,
+      message: "Not enough stock",
+      stock: inventory.quantity,
+    };
+  }
+};
+
 module.exports = {
   createInventory,
   getAllInventory,
@@ -125,4 +191,8 @@ module.exports = {
   updateInventory,
   deleteInventory,
   getAllProductInInventory,
+  updateInventoryQuantity,
+  decreaseStock,
+  increaseStock,
+  checkStock,
 };
