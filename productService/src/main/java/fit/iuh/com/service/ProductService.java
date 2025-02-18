@@ -3,8 +3,12 @@ package fit.iuh.com.service;
 import fit.iuh.com.dao.ProductRepository;
 import fit.iuh.com.model.Product;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,12 +21,12 @@ public class ProductService {
         this.productRepository = productRepository;
     }
 
-    public List<Product> getAllProduct() {
+    public List<Product> getAllProducts() {
         return productRepository.findAll();
     }
 
     public Product getProduct(UUID id) {
-        return productRepository.findById(id).orElse(null);
+        return productRepository.findProductById(id);
     }
 
     public Product createProduct(Product product) {
@@ -30,25 +34,19 @@ public class ProductService {
     }
 
     public Product updateProduct(Product product, UUID id) {
-        if (productRepository.findById(id).orElse(null) == null) {
+        if (productRepository.findProductById(id) == null) {
             return null;
         }
         return productRepository.save(product);
     }
-
-    public List<Product> getProductsByCategoryName(String categoryName) {
-        return productRepository.findProductByCategoryNameContaining(categoryName);
+    public Page<Product> getProductsPaged(int page, int size, String search, String category) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        return productRepository.searchProducts(search, category, pageable);
     }
-
-    public List<Product> getProductsByName(String productName) {
-        return productRepository.findProductByNameContaining(productName);
+    public List<Product> getSuggestions(String search) {
+        return productRepository.suggestProducts(search);
     }
-
-    public Product deleteProduct(UUID id) {
-        Product product = productRepository.findById(id).orElse(null);
-        if (product != null) {
-            productRepository.delete(product);
-        }
-        return product;
+    public List<Product> getProductsByIds(List<String> productIds) {
+        return productRepository.findProductsByListIds(productIds);
     }
 }

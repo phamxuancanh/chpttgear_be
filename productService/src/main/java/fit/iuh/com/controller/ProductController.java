@@ -1,113 +1,69 @@
 package fit.iuh.com.controller;
 
-import fit.iuh.com.model.Category;
 import fit.iuh.com.model.Product;
-import fit.iuh.com.service.CategoryService;
 import fit.iuh.com.service.ProductService;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1")
 public class ProductController {
 
     private final ProductService productService;
-    private final CategoryService categoryService;
 
-    public ProductController(ProductService productService, CategoryService categoryService) {
+    public ProductController(ProductService productService) {
         this.productService = productService;
-        this.categoryService = categoryService;
     }
 
-    // GET
-
-    /**
-     * GET ALL
-     */
-    @GetMapping("/products")
-    public List<Product> getAllProduct(){
-        return productService.getAllProduct();
+    @GetMapping("/products/searchProducts")
+    public ResponseEntity<Map<String, Object>> getMyProducts(@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "8") int size, @RequestParam(required = false) String search, @RequestParam(required = false) String category) {
+        try {
+            Page<Product> productPage = productService.getProductsPaged(page, size, search, category);
+            Map<String, Object> response = new HashMap<>();
+            response.put("page", page);
+            response.put("size", size);
+            response.put("totalRecords", productPage.getTotalElements());
+            response.put("data", productPage.getContent());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", "Đã xảy ra lỗi khi lấy danh sách sản phẩm."));
+        }
     }
-
-
-    @GetMapping("/categories")
-    public List<Category> getAllCategories() {
-        List<Category> categories = categoryService.getAllCategories();
-        return categories;
+    @GetMapping("/products/findByIds")
+    public ResponseEntity<List<Product>> getProducts(@RequestParam List<String> productIds) {
+        List<Product> products = productService.getProductsByIds(productIds);
+        return ResponseEntity.ok(products);
     }
-
-    /**
-     * GET BY ID
-     */
-    @GetMapping("/products/{id}")
-    public Product getProductById(@PathVariable UUID id){
+    @GetMapping("products/getSuggestions")
+    public ResponseEntity<List<Product>> getSuggestions(@RequestParam(required = false) String search) {
+        List<Product> suggestions = productService.getSuggestions(search);
+        return ResponseEntity.ok(suggestions);
+    }
+    @GetMapping("/products/findById/{id}")
+    public Product getProductById(@PathVariable UUID id) {
+        System.out.println("chay vao 2");
         Product product = productService.getProduct(id);
-        if(product == null){
+        if (product == null) {
             return null;
         } else {
             return product;
         }
     }
 
-    @GetMapping("/categories/{id}")
-    public Category getCategoryById(@PathVariable UUID id) {
-        return categoryService.getCategoryById(id);
-    }
-
-    /**
-     * GET BY NAME
-     */
-
-    @GetMapping("/products/{productName}")
-    public List<Product> getProductsByName(@PathVariable String productName){
-        return productService.getProductsByName(productName);
-    }
-
-    @GetMapping("/products/{categoryName}")
-    public List<Product> getProductsByCategoryName(@PathVariable String categoryName){
-        return productService.getProductsByCategoryName(categoryName);
-    }
-
-    /**
-     * CREATE
-     */
     @PostMapping("/products")
-    public Product createProduct(@RequestBody Product product){
+    public Product createProduct(@RequestBody Product product) {
+        System.out.println("test create");
         return productService.createProduct(product);
     }
 
-    @PostMapping("/categories")
-    public Category createCategory(@RequestBody Category category){
-        return categoryService.createCategory(category);
-    }
-
-    /**
-     * UPDATE
-     */
-    @PutMapping("/products/{id}")
-    public Product updateProduct(@RequestBody Product product, @PathVariable UUID id){
+    @PostMapping("/products/{id}")
+    public Product updateProduct(@RequestBody Product product, @PathVariable UUID id) {
         return productService.updateProduct(product, id);
-    }
-
-    @PutMapping("/categories/{id}")
-    public Category updateCategory(@RequestBody Category category, @PathVariable UUID id){
-        return categoryService.updateCategory(category, id);
-    }
-
-    /**
-     * DELETE
-     */
-
-    @DeleteMapping("/products/{id}")
-    public Product deleteProduct(@PathVariable UUID id){
-        return productService.deleteProduct(id);
-    }
-
-    @DeleteMapping("/categories/{id}")
-    public Category deleteCategory(@PathVariable UUID id){
-        return categoryService.deleteCategory(id);
     }
 
 }

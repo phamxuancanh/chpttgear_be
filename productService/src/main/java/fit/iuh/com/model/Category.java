@@ -1,9 +1,9 @@
 package fit.iuh.com.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.util.List;
@@ -27,8 +27,8 @@ public class Category {
     @Column(columnDefinition = "TEXT")
     private String description;
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Product> productList;
-
     @Override
     public String toString() {
         return "Category{" +
@@ -70,4 +70,5 @@ public class Category {
     public void setProductList(List<Product> productList) {
         this.productList = productList;
     }
+
 }

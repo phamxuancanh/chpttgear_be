@@ -4,7 +4,7 @@ const verifyAccessToken = require("./authentication");
 const API_PREFIX = require("../utils/utils").API_PREFIX;
 module.exports = (app) => {
   const RATE_LIMIT = 100; // requests per minute
-  const TIMEOUT = 200 * 1000; // 10 seconds
+  const TIMEOUT = 10 * 1000; // 10 seconds
   const publicAPIs = [
     "/signUp",
     "/signIn",
@@ -34,7 +34,23 @@ module.exports = (app) => {
       // proxyTimeout: TIMEOUT, // Set the timeout for the proxy
     })
   );
-
+  app.use(
+    `${API_PREFIX}/products`,
+    (req, res, next) => {
+      console.log("req.path", req.params);
+      const pathWithoutPrefix = req.path.replace(`${API_PREFIX}`, "");
+      // if (!publicAPIs.includes(pathWithoutPrefix)) {
+      //   return verifyAccessToken(req, res, next);
+      // }
+      next();
+    },
+    rateLimitAndTimeout("/products", RATE_LIMIT, TIMEOUT),
+    createProxyMiddleware({
+      target: process.env.PRODUCT_SERVICE_URL + `${API_PREFIX}`,
+      changeOrigin: true,
+      pathRewrite: { [`^${API_PREFIX}`]: "" },
+    })
+  );
   // Proxy for Inventory Service
   app.use(
     `${API_PREFIX}/inventory`,
@@ -47,16 +63,8 @@ module.exports = (app) => {
     })
   );
 
-  app.use(
-    `${API_PREFIX}/products`,
-    // verifyAccessToken,
-    rateLimitAndTimeout("/products", RATE_LIMIT, TIMEOUT),
-    createProxyMiddleware({
-      target: process.env.PRODUCT_SERVICE_URL + `${API_PREFIX}/products`,
-      changeOrigin: true,
-      pathRewrite: { [`^${API_PREFIX}/products`]: "" },
-    })
-  );
+
+  
 
   // Proxy for Cart Service
   app.use(
