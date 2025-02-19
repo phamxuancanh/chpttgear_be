@@ -46,7 +46,10 @@ const getStockOutByInventoryId = async (req, res) => {
     if (stockInRecords.length === 0) {
       return res
         .status(404)
-        .json({ message: "Không có dữ liệu stock_in với inventory_id này" });
+        .json({
+          message: "Không có dữ liệu stock_in với inventory_id này",
+          status: 404,
+        });
     }
 
     // Trả về dữ liệu stock_in tìm được
