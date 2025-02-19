@@ -66,4 +66,10 @@ public class ProductController {
         return productService.updateProduct(product, id);
     }
 
+    @GetMapping("/products")
+    public ResponseEntity<List<Product>> getAllProduct(){
+        List<Product> productList = productService.getAllProducts();
+        return ResponseEntity.ok(productList);
+    }
+
 }

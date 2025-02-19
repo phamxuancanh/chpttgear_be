@@ -3,7 +3,7 @@ const inventoryService = require("../services/Inventory_Service");
 // Tạo mới một inventory
 const createInventory = async (req, res) => {
   try {
-    const data = req.body; // Lấy dữ liệu từ request body
+    const data = req.body.data; // Lấy dữ liệu từ request body
     const newInventory = await inventoryService.createInventory(data);
     res.status(201).json(newInventory);
   } catch (error) {
@@ -16,6 +16,7 @@ const getAllInventory = async (req, res) => {
   try {
     const inventories = await inventoryService.getAllInventory();
     res.status(200).json(inventories);
+    if (inventories.length == 0) return [];
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -28,7 +29,7 @@ const getInventoryById = async (req, res) => {
     const inventory = await inventoryService.getInventoryById(inventory_id);
     res.status(200).json(inventory);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(404).json({ message: error.message });
   }
 };
 
