@@ -181,25 +181,25 @@ services:
   #   networks:
   #     - app_network
 
-  # product:
-  #   build:
-  #     context: ./productService # Thư mục chứa ứng dụng Java
-  #     dockerfile: Dockerfile # Tệp Dockerfile
-  #   container_name: product
-  #   depends_on:
-  #     - kafka # Kafka cần chạy trước
-  #   environment:
-  #     SPRING_DATASOURCE_URL: jdbc:postgresql://dpg-cu0tdmd2ng1s73e32250-a.singapore-postgres.render.com:5432/chpttgear
-  #     SPRING_DATASOURCE_USERNAME: chpttgear_user
-  #     SPRING_DATASOURCE_PASSWORD: cBUv879D8Rshnxy1eyog0HxePFqPPAXF
-  #     SPRING_APPLICATION_NAME: productService
-  #     SPRING_JPA_HIBERNATE_DDL_AUTO: update
-  #     SPRING_JPA_SHOW_SQL: "true"
-  #     SERVER_PORT: 4444 # Đảm bảo rằng server chạy đúng cổng
-  #   ports:
-  #     - "4444:4444" # Mở cổng 4444
-  #   networks:
-  #     - app_network # Mạng tùy chỉnh để giao tiếp giữa các container
+  product:
+    build:
+      context: ./productService # Thư mục chứa ứng dụng Java
+      dockerfile: Dockerfile # Tệp Dockerfile
+    container_name: product
+    depends_on:
+      - kafka # Kafka cần chạy trước
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://dpg-cuk3885umphs73bad66g-a.singapore-postgres.render.com/chptt_gear
+      SPRING_DATASOURCE_USERNAME: sa
+      SPRING_DATASOURCE_PASSWORD: XX31XbZT5dtyKhELmOvjUAyw8goo9A4z
+      SPRING_APPLICATION_NAME: productService
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+      SERVER_PORT: 4444 # Đảm bảo rằng server chạy đúng cổng
+    ports:
+      - "4444:4444" # Mở cổng 4444
+    networks:
+      - app_network # Mạng tùy chỉnh để giao tiếp giữa các container
 
 networks:
   app_network:

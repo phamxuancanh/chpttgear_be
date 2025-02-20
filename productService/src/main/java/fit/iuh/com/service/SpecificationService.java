@@ -45,8 +45,8 @@ public class SpecificationService {
         return specificationRepository.findById(id).orElse(null);
     }
 
-    public Specification createSpecification(Specification specification, UUID productId) {
-        if (productRepository.findById(productId).orElse(null) == null) {
+    public Specification createSpecification(Specification specification) {
+        if (productRepository.findById(specification.getProduct().getId()).orElse(null) == null) {
             throw new RuntimeException("Sản phẩm không tồn tại");
         }
         return specificationRepository.save(specification);

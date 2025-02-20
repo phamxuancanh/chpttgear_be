@@ -50,10 +50,11 @@ public class Product {
     @JoinColumn(name = "category_id", columnDefinition = "UUID")
     @JsonIgnoreProperties("productList")
     private Category category;
+    @Column(name = "inventory_id", columnDefinition = "UUID")
     private UUID inventoryId;
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    @JsonIgnore
-    private List<Specification> specifications;
+//    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+//    @JsonIgnore
+//    private List<Specification> specifications;
 
 
     public UUID getId() {
@@ -152,7 +153,6 @@ public class Product {
         this.category = category;
     }
 
-
     public UUID getInventoryId() {
         return inventoryId;
     }
@@ -160,6 +160,14 @@ public class Product {
     public void setInventoryId(UUID inventoryId) {
         this.inventoryId = inventoryId;
     }
+
+//    public List<Specification> getSpecifications() {
+//        return specifications;
+//    }
+//
+//    public void setSpecifications(List<Specification> specifications) {
+//        this.specifications = specifications;
+//    }
 
     @Override
     public String toString() {
@@ -177,6 +185,7 @@ public class Product {
                 ", modifiedDate=" + modifiedDate +
                 ", category=" + category +
                 ", inventoryId=" + inventoryId +
+//                ", specifications=" + specifications +
                 '}';
     }
 }

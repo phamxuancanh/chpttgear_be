@@ -3,6 +3,7 @@ package fit.iuh.com.controller;
 import fit.iuh.com.model.Product;
 import fit.iuh.com.service.ProductService;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -62,11 +63,10 @@ public class ProductController {
         }
     }
 
-    @PostMapping("/products")
+    @PostMapping("/products/createProduct")
     public ResponseEntity<Product> createProduct(@RequestBody Product product) {
-        System.out.println("test create");
         Product newProduct = productService.createProduct(product);
-        return ResponseEntity.status(HttpStatus.CREATED).body(newProduct);
+        return ResponseEntity.status(HttpStatus.CREATED).allow(HttpMethod.POST).body(newProduct);
     }
 
     @PutMapping("/products/{productId}")
