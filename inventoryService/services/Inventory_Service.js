@@ -184,6 +184,43 @@ const checkStock = async (product_id, quantity) => {
   }
 };
 
+const getQuantityInStockByProductId = async (productId) => {
+  try {
+    const stockIn =
+      (await models.Stock_In.sum("quantity", {
+        where: { product_id: productId },
+      })) || 0;
+    const stockOut =
+      (await models.Stock_Out.sum("quantity", {
+        where: { product_id: productId },
+      })) || 0;
+
+    return stockIn - stockOut;
+  } catch (error) {
+    throw new Error("Lỗi khi lấy tồn kho: " + error.message);
+  }
+};
+const getQuantityInStockByProductIdAndInventoryId = async (
+  productId,
+  inventoryId
+) => {
+  try {
+    const stockIn =
+      (await models.Stock_In.sum("quantity", {
+        where: { product_id: productId, inventory_id: inventoryId },
+      })) || 0;
+
+    const stockOut =
+      (await models.Stock_Out.sum("quantity", {
+        where: { product_id: productId, inventory_id: inventoryId },
+      })) || 0;
+
+    return stockIn - stockOut;
+  } catch (error) {
+    throw new Error("Lỗi khi lấy tồn kho: " + error.message);
+  }
+};
+
 module.exports = {
   createInventory,
   getAllInventory,
@@ -195,4 +232,6 @@ module.exports = {
   decreaseStock,
   increaseStock,
   checkStock,
+  getQuantityInStockByProductId,
+  getQuantityInStockByProductIdAndInventoryId,
 };

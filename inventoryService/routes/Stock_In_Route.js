@@ -11,5 +11,9 @@ router.get(
   "/getByInventoryId/:inventory_id",
   stockInController.getStockInByInventoryId
 );
+router.get(
+  "/getByProductId/:product_id",
+  stockInController.getStockInByProductId
+);
 
 module.exports = router;
