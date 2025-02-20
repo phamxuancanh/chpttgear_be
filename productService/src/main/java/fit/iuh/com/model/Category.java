@@ -26,18 +26,10 @@ public class Category {
     private String name;
     @Column(columnDefinition = "TEXT")
     private String description;
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
-    @JsonIgnore
-    private List<Product> productList;
-    @Override
-    public String toString() {
-        return "Category{" +
-                "id=" + id.toString() +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", productList=" + productList +
-                '}';
-    }
+//    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+//    @JsonIgnore
+//    private List<Product> productList;
+
 
     public UUID getId() {
         return id;
@@ -63,12 +55,12 @@ public class Category {
         this.description = description;
     }
 
-    public List<Product> getProductList() {
-        return productList;
+    @Override
+    public String toString() {
+        return "Category{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                '}';
     }
-
-    public void setProductList(List<Product> productList) {
-        this.productList = productList;
-    }
-
 }

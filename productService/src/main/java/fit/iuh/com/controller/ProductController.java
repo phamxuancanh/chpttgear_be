@@ -44,8 +44,15 @@ public class ProductController {
         List<Product> suggestions = productService.getSuggestions(search);
         return ResponseEntity.ok(suggestions);
     }
-    @GetMapping("/products/findById/{id}")
-    public Product getProductById(@PathVariable UUID id) {
+
+    @GetMapping("/products/findAllProducts")
+    public ResponseEntity<List<Product>> getAllProducts() {
+        List<Product> products = productService.getAllProducts();
+        return ResponseEntity.ok(products);
+    }
+
+    @GetMapping("/products/findById/{productId}")
+    public Product getProductById(@PathVariable("productId") UUID id) {
         System.out.println("chay vao 2");
         Product product = productService.getProduct(id);
         if (product == null) {
@@ -56,14 +63,16 @@ public class ProductController {
     }
 
     @PostMapping("/products")
-    public Product createProduct(@RequestBody Product product) {
+    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
         System.out.println("test create");
-        return productService.createProduct(product);
+        Product newProduct = productService.createProduct(product);
+        return ResponseEntity.status(HttpStatus.CREATED).body(newProduct);
     }
 
-    @PostMapping("/products/{id}")
-    public Product updateProduct(@RequestBody Product product, @PathVariable UUID id) {
-        return productService.updateProduct(product, id);
+    @PutMapping("/products/{productId}")
+    public ResponseEntity<Product> updateProduct(@RequestBody Product product, @PathVariable("productId") UUID id) {
+        Product updatedProduct = productService.updateProduct(product, id);
+        return ResponseEntity.ok(updatedProduct);
     }
 
     @GetMapping("/products")

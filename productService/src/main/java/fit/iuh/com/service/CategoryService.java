@@ -1,6 +1,6 @@
 package fit.iuh.com.service;
 
-import fit.iuh.com.dao.CategoryRepository;
+import fit.iuh.com.repository.CategoryRepository;
 import fit.iuh.com.model.Category;
 import org.springframework.stereotype.Service;
 
