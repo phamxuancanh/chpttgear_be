@@ -2,6 +2,7 @@ package fit.iuh.com.controller;
 
 import fit.iuh.com.model.Category;
 import fit.iuh.com.service.CategoryService;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,13 +15,13 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1")
+//@AllArgsConstructor
 public class CategoriesController {
-    private CategoryService categoryService;
+    private final CategoryService categoryService;
 
-    public CategoriesController(CategoryService categoryService) {
+    public CategoriesController(final CategoryService categoryService) {
         this.categoryService = categoryService;
     }
-
 //    @GetMapping
 //    public ResponseEntity<List<Category>> getAllCategories() {
 //        List<Category> categories = categoryService.getAllCategories();
@@ -37,6 +38,4 @@ public class CategoriesController {
     public Category getCategoryById(@PathVariable UUID id) {
         return categoryService.getCategoryById(id);
     }
-
-
 }

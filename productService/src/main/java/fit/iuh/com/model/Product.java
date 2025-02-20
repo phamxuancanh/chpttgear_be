@@ -7,20 +7,19 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-@Entity
-@Table(name = "products")
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Entity
+@Table(name = "products")
 public class Product {
     @Id
     @GeneratedValue
@@ -29,8 +28,6 @@ public class Product {
     private UUID id;
     @Column(columnDefinition = "VARCHAR(255)")
     private String name;
-    @Column(columnDefinition = "integer")
-    private int productNumber;
     @Column(columnDefinition = "TEXT")
     private String description;
     @Column(columnDefinition = "double precision")
@@ -53,29 +50,11 @@ public class Product {
     @JoinColumn(name = "category_id", columnDefinition = "UUID")
     @JsonIgnoreProperties("productList")
     private Category category;
+    private UUID inventoryId;
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<Specification> specifications;
 
-    @Override
-    public String toString() {
-        return "Product{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", productNumber=" + productNumber +
-                ", description='" + description + '\'' +
-                ", price=" + price +
-                ", image='" + image + '\'' +
-                ", brand='" + brand + '\'' +
-                ", color='" + color + '\'' +
-                ", size=" + size +
-                ", weight=" + weight +
-                ", guaranteePeriod=" + guaranteePeriod +
-                ", modifiedDate=" + modifiedDate +
-                ", category=" + category +
-                ", specifications=" + specifications +
-                '}';
-    }
 
     public UUID getId() {
         return id;
@@ -91,14 +70,6 @@ public class Product {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public int getProductNumber() {
-        return productNumber;
-    }
-
-    public void setProductNumber(int productNumber) {
-        this.productNumber = productNumber;
     }
 
     public String getDescription() {
@@ -181,11 +152,31 @@ public class Product {
         this.category = category;
     }
 
-    public List<Specification> getSpecifications() {
-        return specifications;
+
+    public UUID getInventoryId() {
+        return inventoryId;
     }
 
-    public void setSpecifications(List<Specification> specifications) {
-        this.specifications = specifications;
+    public void setInventoryId(UUID inventoryId) {
+        this.inventoryId = inventoryId;
+    }
+
+    @Override
+    public String toString() {
+        return "Product{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", price=" + price +
+                ", image='" + image + '\'' +
+                ", brand='" + brand + '\'' +
+                ", color='" + color + '\'' +
+                ", size=" + size +
+                ", weight=" + weight +
+                ", guaranteePeriod=" + guaranteePeriod +
+                ", modifiedDate=" + modifiedDate +
+                ", category=" + category +
+                ", inventoryId=" + inventoryId +
+                '}';
     }
 }

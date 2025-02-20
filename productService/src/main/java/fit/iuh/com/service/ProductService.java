@@ -1,6 +1,6 @@
 package fit.iuh.com.service;
 
-import fit.iuh.com.dao.ProductRepository;
+import fit.iuh.com.repository.ProductRepository;
 import fit.iuh.com.model.Product;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
@@ -8,7 +8,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,7 +25,7 @@ public class ProductService {
     }
 
     public Product getProduct(UUID id) {
-        return productRepository.findProductById(id);
+        return productRepository.findById(id).orElse(null);
     }
 
     public Product createProduct(Product product) {
@@ -34,7 +33,7 @@ public class ProductService {
     }
 
     public Product updateProduct(Product product, UUID id) {
-        if (productRepository.findProductById(id) == null) {
+        if (productRepository.findById(id).orElse(null) == null) {
             return null;
         }
         return productRepository.save(product);

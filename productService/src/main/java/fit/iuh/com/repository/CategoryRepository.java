@@ -1,4 +1,4 @@
-package fit.iuh.com.dao;
+package fit.iuh.com.repository;
 
 import fit.iuh.com.model.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
