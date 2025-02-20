@@ -36,6 +36,20 @@ const deleteStockOut = async (id) => {
   return await StockOut.destroy({ where: { stock_out_id: id } });
 };
 
+const getStockInByProductId = async (product_id) => {
+  try {
+    const stockOutRecords = await StockOut.findAll({
+      where: {
+        product_id: product_id, // Lọc theo inventory_id
+      },
+    });
+    return stockOutRecords; // Trả về danh sách các bản ghi stock_in tìm được
+  } catch (error) {
+    console.error("Lỗi khi lấy thông tin stock_in:", error);
+    throw error; // Hoặc bạn có thể xử lý lỗi theo cách khác
+  }
+};
+
 module.exports = {
   getAllStockOut,
   getStockOutById,
@@ -43,4 +57,5 @@ module.exports = {
   updateStockOut,
   deleteStockOut,
   getStockOutByInventoryId,
+  getStockInByProductId,
 };

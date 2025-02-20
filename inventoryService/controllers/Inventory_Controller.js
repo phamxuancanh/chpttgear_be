@@ -123,6 +123,40 @@ const checkStock = async (req, res) => {
   res.json(result);
 };
 
+const getQuantityInStock = async (req, res) => {
+  try {
+    const { product_id } = req.params;
+    if (!product_id) return res.status(400).json({ error: "Thiếu product_id" });
+
+    const quantityInStock =
+      await inventoryService.getQuantityInStockByProductId(product_id);
+    res.json({ product_id, quantityInStock });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const getQuantityInStockByProductIdAndInventoryId = async (req, res) => {
+  try {
+    const { product_id, inventory_id } = req.query;
+
+    if (!product_id || !inventory_id) {
+      return res
+        .status(400)
+        .json({ error: "Thiếu product_id hoặc inventory_id" });
+    }
+
+    const quantityInStock =
+      await inventoryService.getQuantityInStockByProductIdAndInventoryId(
+        product_id,
+        inventory_id
+      );
+    res.json({ product_id, inventory_id, quantityInStock });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createInventory,
   getAllInventory,
@@ -133,4 +167,6 @@ module.exports = {
   decreaseStock,
   increaseStock,
   checkStock,
+  getQuantityInStock,
+  getQuantityInStockByProductIdAndInventoryId,
 };

@@ -23,6 +23,20 @@ const getStockInByInventoryId = async (inventoryId) => {
   }
 };
 
+const getStockInByProductId = async (product_id) => {
+  try {
+    const stockInRecords = await StockIn.findAll({
+      where: {
+        product_id: product_id, // Lọc theo inventory_id
+      },
+    });
+    return stockInRecords; // Trả về danh sách các bản ghi stock_in tìm được
+  } catch (error) {
+    console.error("Lỗi khi lấy thông tin stock_in:", error);
+    throw error; // Hoặc bạn có thể xử lý lỗi theo cách khác
+  }
+};
+
 const createStockIn = async (data) => {
   try {
     // In dữ liệu để kiểm tra
@@ -63,4 +77,5 @@ module.exports = {
   updateStockIn,
   deleteStockIn,
   getStockInByInventoryId,
+  getStockInByProductId,
 };
