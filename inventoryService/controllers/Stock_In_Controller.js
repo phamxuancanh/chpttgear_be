@@ -9,7 +9,7 @@ const getStockInById = async (req, res) => {
   const data = await stockInService.getStockInById(req.params.id);
   data
     ? res.json(data)
-    : res.status(404).json({ message: "Stock In not found" });
+    : res.status(404).json({ message: "Stock In not found", status: 404 });
 };
 
 const createStockIn = async (req, res) => {
@@ -44,7 +44,10 @@ const getStockInByInventoryId = async (req, res) => {
     if (stockInRecords.length === 0) {
       return res
         .status(404)
-        .json({ message: "Không có dữ liệu stock_in với inventory_id này" });
+        .json({
+          message: "Không có dữ liệu stock_in với inventory_id này",
+          status: 404,
+        });
     }
 
     // Trả về dữ liệu stock_in tìm được
