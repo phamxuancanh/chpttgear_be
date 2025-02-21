@@ -1,8 +1,12 @@
 package fit.iuh.com.controller;
 
+import fit.iuh.com.model.Product;
 import fit.iuh.com.model.Specification;
 import fit.iuh.com.service.SpecificationService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,10 +41,10 @@ public class SpecificationController {
         return ResponseEntity.ok(specification);
     }
 
-    @PostMapping("/{productId}/specifications/")
-    public ResponseEntity<Specification> createSpecification(@RequestBody Specification specification, @PathVariable("productId") UUID productId) {
-        Specification createdSpecification = specificationService.createSpecification(specification, productId);
-        return ResponseEntity.ok(createdSpecification);
+    @PostMapping("/specifications/createSpecification")
+    public ResponseEntity<Specification> createSpecification(@RequestBody Specification specification) {
+        Specification newSpecification = specificationService.createSpecification(specification);
+        return ResponseEntity.status(HttpStatus.CREATED).body(newSpecification);
     }
 
     @PutMapping("/{productId}/specifications/{specId}")
