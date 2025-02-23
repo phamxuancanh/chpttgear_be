@@ -52,14 +52,11 @@ public class SpecificationService {
         return specificationRepository.save(specification);
     }
 
-    public Specification updateSpecification(Specification specification, UUID specId, UUID productId) {
-        if (productRepository.findById(productId).orElse(null) == null) {
-            throw new RuntimeException("Sản phẩm không tồn tại");
-        }
+    public Specification updateSpecification(Specification specification, UUID specId) {
+        specificationRepository.findById(specId).orElseThrow(()
+                -> new RuntimeException("Specification not found"));
         Specification updateSpec = specificationRepository.findById(specId).orElse(null);
-        if (updateSpec != null) {
-            updateSpec.setValue(specification.getValue()); // chỉ chỉnh sửa value
-        }
+        updateSpec.setValue(specification.getValue());
         return specificationRepository.save(updateSpec);
     }
 }
