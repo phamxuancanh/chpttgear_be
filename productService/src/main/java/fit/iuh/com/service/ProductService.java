@@ -6,6 +6,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,19 +34,42 @@ public class ProductService {
     }
 
     public Product updateProduct(Product product, UUID id) {
-        if (productRepository.findById(id).orElse(null) == null) {
-            return null;
-        }
-        return productRepository.save(product);
+        productRepository.findById(id).orElseThrow(()
+            -> new RuntimeException("Product not found"));
+        Product updatedProduct = productRepository.findById(id).orElse(null);
+        System.out.println(updatedProduct.getName());
+        updatedProduct.setDescription(product.getDescription());
+        updatedProduct.setSize(product.getSize());
+        updatedProduct.setWeight(product.getWeight());
+        updatedProduct.setColor(product.getColor());
+        updatedProduct.setImage(product.getImage());
+        updatedProduct.setGuaranteePeriod(product.getGuaranteePeriod());
+        return productRepository.save(updatedProduct);
     }
-    public Page<Product> getProductsPaged(int page, int size, String search, String category) {
+
+    public Page<Product> getProductsPaged(int page, int size, String search, String category, String color, Double  price_gte, Double  price_lte) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        return productRepository.searchProducts(search, category, pageable);
+        return productRepository.searchProducts(search, category, color, price_gte, price_lte, pageable);
     }
+    public Page<Product> getProductsForManagement(int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        return productRepository.getProductForManagement(pageable);
+    }
+
     public List<Product> getSuggestions(String search) {
         return productRepository.suggestProducts(search);
     }
+
     public List<Product> getProductsByIds(List<String> productIds) {
         return productRepository.findProductsByListIds(productIds);
+    }
+
+    public Product updatePriceByProductId(UUID productId, double price) {
+        Product product = productRepository.findById(productId).orElse(null);
+        if (product == null) {
+            return null;
+        }
+        product.setPrice(price);
+        return productRepository.save(product);
     }
 }

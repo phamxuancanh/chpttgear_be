@@ -38,10 +38,10 @@ public class Product {
     private String brand;
     @Column(columnDefinition = "VARCHAR(255)")
     private String color;
-    @Column(columnDefinition = "integer")
-    private int size;
-    @Column(columnDefinition = "integer")
-    private int weight;
+    @Column(columnDefinition = "VARCHAR(255)")
+    private String size;
+    @Column(columnDefinition = "double precision")
+    private double weight;
     @Column(columnDefinition = "integer")
     private int guaranteePeriod;
     @Column(columnDefinition = "TIMESTAMP")
@@ -113,19 +113,19 @@ public class Product {
         this.color = color;
     }
 
-    public int getSize() {
+    public String getSize() {
         return size;
     }
 
-    public void setSize(int size) {
+    public void setSize(String size) {
         this.size = size;
     }
 
-    public int getWeight() {
+    public double getWeight() {
         return weight;
     }
 
-    public void setWeight(int weight) {
+    public void setWeight(double weight) {
         this.weight = weight;
     }
 
