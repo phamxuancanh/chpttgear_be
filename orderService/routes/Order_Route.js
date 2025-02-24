@@ -1,5 +1,5 @@
 const express = require('express');
-const orderController = require('../controllers/OrderController');
+const orderController = require('../controllers/Order_Controller');
 const router = express.Router();
 
 // Get all orders
@@ -9,7 +9,7 @@ router.get('/', orderController.getAllOrders);
 router.get('/:orderId', orderController.getOrderById);
 
 // Get orders by user ID
-router.get('/user/:userId', orderController.getOrderByUserId);
+router.get('/orders/:userId', orderController.getOrdersByUserId);
 
 // Create a new order
 router.post('/', orderController.createOrder);

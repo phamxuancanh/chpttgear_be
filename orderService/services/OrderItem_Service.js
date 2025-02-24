@@ -1,28 +1,28 @@
-const { OrderItem } = require('../models');
+const OrderItem = require('../models/Order_Item');
 const { Kafka } = require('kafkajs');
 const dotenv = require('dotenv');
 
 dotenv.config();
 
-// Khởi tạo Kafka producer
-const kafka = new Kafka({
-    clientId: process.env.CLIENT_ID,
-    brokers: [process.env.KAFKA_BROKER],
-});
+// // Khởi tạo Kafka producer
+// const kafka = new Kafka({
+//     clientId: process.env.CLIENT_ID,
+//     brokers: [process.env.KAFKA_BROKER],
+// });
 
-const producer = kafka.producer();
+// const producer = kafka.producer();
 
 // Khởi tạo producer Kafka
-const startKafkaProducer = async () => {
-    try {
-        await producer.connect();
-        console.log("Kafka Producer connected successfully");
-    } catch (error) {
-        console.error("Error connecting to Kafka producer", error);
-    }
-};
+// const startKafkaProducer = async () => {
+//     try {
+//         await producer.connect();
+//         console.log("Kafka Producer connected successfully");
+//     } catch (error) {
+//         console.error("Error connecting to Kafka producer", error);
+//     }
+// };
 
-startKafkaProducer(); // Kết nối producer với Kafka broker
+// startKafkaProducer(); // Kết nối producer với Kafka broker
 
 // Lấy tất cả các order item trong đơn hàng
 exports.getAllOrderItemsByOrderId = async (orderId) => {
@@ -55,20 +55,20 @@ exports.createOrderItem = async (orderItemData) => {
         const orderItem = await OrderItem.create(orderItemData);
 
         // Gửi sự kiện Kafka khi tạo order item
-        await producer.send({
-            topic: process.env.KAFKA_TOPIC,
-            messages: [
-                {
-                    value: JSON.stringify({
-                        eventType: 'ORDER_ITEM_CREATED',
-                        orderItemData,
-                        timestamp: new Date(),
-                    }),
-                },
-            ],
-        });
+        // await producer.send({
+        //     topic: process.env.KAFKA_TOPIC,
+        //     messages: [
+        //         {
+        //             value: JSON.stringify({
+        //                 eventType: 'ORDER_ITEM_CREATED',
+        //                 orderItemData,
+        //                 timestamp: new Date(),
+        //             }),
+        //         },
+        //     ],
+        // });
 
-        console.log('Sent event ORDER_ITEM_CREATED to Kafka');
+        // console.log('Sent event ORDER_ITEM_CREATED to Kafka');
         return orderItem;
     } catch (error) {
         throw new Error('Có lỗi xảy ra khi tạo mặt hàng trong đơn hàng');
@@ -85,20 +85,20 @@ exports.updateOrderItem = async (orderItemId, orderItemData) => {
         await orderItem.update(orderItemData);
 
         // Gửi sự kiện Kafka khi cập nhật order item
-        await producer.send({
-            topic: process.env.KAFKA_TOPIC,
-            messages: [
-                {
-                    value: JSON.stringify({
-                        eventType: 'ORDER_ITEM_UPDATED',
-                        orderItemData,
-                        timestamp: new Date(),
-                    }),
-                },
-            ],
-        });
+        // await producer.send({
+        //     topic: process.env.KAFKA_TOPIC,
+        //     messages: [
+        //         {
+        //             value: JSON.stringify({
+        //                 eventType: 'ORDER_ITEM_UPDATED',
+        //                 orderItemData,
+        //                 timestamp: new Date(),
+        //             }),
+        //         },
+        //     ],
+        // });
 
-        console.log('Sent event ORDER_ITEM_UPDATED to Kafka');
+        // console.log('Sent event ORDER_ITEM_UPDATED to Kafka');
         return orderItem;
     } catch (error) {
         throw new Error('Có lỗi xảy ra khi cập nhật mặt hàng trong đơn hàng');
@@ -115,20 +115,20 @@ exports.deleteOrderItem = async (orderItemId) => {
         await orderItem.destroy();
 
         // Gửi sự kiện Kafka khi xóa order item
-        await producer.send({
-            topic: process.env.KAFKA_TOPIC,
-            messages: [
-                {
-                    value: JSON.stringify({
-                        eventType: 'ORDER_ITEM_DELETED',
-                        orderItemData: orderItem,
-                        timestamp: new Date(),
-                    }),
-                },
-            ],
-        });
+        // await producer.send({
+        //     topic: process.env.KAFKA_TOPIC,
+        //     messages: [
+        //         {
+        //             value: JSON.stringify({
+        //                 eventType: 'ORDER_ITEM_DELETED',
+        //                 orderItemData: orderItem,
+        //                 timestamp: new Date(),
+        //             }),
+        //         },
+        //     ],
+        // });
 
-        console.log('Sent event ORDER_ITEM_DELETED to Kafka');
+        // console.log('Sent event ORDER_ITEM_DELETED to Kafka');
         return { message: 'Mặt hàng đã được xóa thành công' };
     } catch (error) {
         throw new Error('Có lỗi xảy ra khi xóa mặt hàng trong đơn hàng');
