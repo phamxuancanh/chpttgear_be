@@ -3,12 +3,11 @@ package fit.iuh.com.controller;
 import fit.iuh.com.model.Category;
 import fit.iuh.com.service.CategoryService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -22,11 +21,6 @@ public class CategoriesController {
     public CategoriesController(final CategoryService categoryService) {
         this.categoryService = categoryService;
     }
-//    @GetMapping
-//    public ResponseEntity<List<Category>> getAllCategories() {
-//        List<Category> categories = categoryService.getAllCategories();
-//        return ResponseEntity.ok(categories);
-//    }
 
     @GetMapping("/categories/findAllCategories")
     public List<Category> getAllCategories() {
@@ -37,5 +31,11 @@ public class CategoriesController {
     @GetMapping("/categories/{id}")
     public Category getCategoryById(@PathVariable UUID id) {
         return categoryService.getCategoryById(id);
+    }
+
+    @PostMapping("/categories/createCategory")
+    public ResponseEntity<Category> createCategory(@RequestBody Category category) {
+        Category newCategory = categoryService.createCategory(category);
+        return ResponseEntity.status(HttpStatus.CREATED).allow(HttpMethod.POST).body(newCategory);
     }
 }

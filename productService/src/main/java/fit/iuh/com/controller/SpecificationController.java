@@ -2,6 +2,7 @@ package fit.iuh.com.controller;
 
 import fit.iuh.com.model.Product;
 import fit.iuh.com.model.Specification;
+import fit.iuh.com.service.ProductService;
 import fit.iuh.com.service.SpecificationService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpMethod;
@@ -29,6 +30,15 @@ public class SpecificationController {
         return ResponseEntity.ok(specifications);
     }
 
+    @GetMapping("/specifications/findByProductId/{productId}")
+    public ResponseEntity<List<Specification>> getSpecificationsByProductId(@PathVariable("productId") UUID productId) {
+        List<Specification> specifications = specificationService.getSpecificationsByProductId(productId);
+        for (Specification specification : specifications) {
+            System.out.println(specification);
+        }
+        return ResponseEntity.ok(specifications);
+    }
+
     @GetMapping("/specification/getAllName")
     public ResponseEntity<List<String>> getAllSpecificationNames() {
         List<String> specifications = specificationService.getAllSpecificationNames();
@@ -47,9 +57,9 @@ public class SpecificationController {
         return ResponseEntity.status(HttpStatus.CREATED).body(newSpecification);
     }
 
-    @PutMapping("/{productId}/specifications/{specId}")
-    public ResponseEntity<Specification> updateSpecification(@RequestBody Specification specification, @PathVariable("specId") UUID specId, @PathVariable("productId") UUID productId) {
-        Specification updatedSpecification = specificationService.updateSpecification(specification, specId, productId);
+    @PutMapping("/specifications/{specId}")
+    public ResponseEntity<Specification> updateSpecification(@RequestBody Specification specification, @PathVariable("specId") UUID specId) {
+        Specification updatedSpecification = specificationService.updateSpecification(specification, specId);
         return ResponseEntity.ok(updatedSpecification);
     }
 }
