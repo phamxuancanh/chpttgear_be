@@ -27,9 +27,14 @@ public class ProductController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "8") int size,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) String color,
+            @RequestParam(required = false) Double  price_gte,
+            @RequestParam(required = false) Double  price_lte,
             @RequestParam(required = false) String category) {
+            System.out.println(category);
+            System.out.println("canh");
         try {
-            Page<Product> productPage = productService.getProductsPaged(page, size, search, category);
+            Page<Product> productPage = productService.getProductsPaged(page, size, search, category, color, price_gte, price_lte);
             Map<String, Object> response = new HashMap<>();
             response.put("page", page);
             response.put("size", size);

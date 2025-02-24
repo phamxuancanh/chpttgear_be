@@ -153,13 +153,8 @@ public class Product {
         this.category = category;
     }
 
-//    public UUID getInventoryId() {
-//        return inventoryId;
-//    }
 
-//    public void setInventoryId(UUID inventoryId) {
-//        this.inventoryId = inventoryId;
-//    }
+
 
 //    public List<Specification> getSpecifications() {
 //        return specifications;
@@ -184,7 +179,6 @@ public class Product {
                 ", guaranteePeriod=" + guaranteePeriod +
                 ", modifiedDate=" + modifiedDate +
                 ", category=" + category +
-//                ", inventoryId=" + inventoryId +
 //                ", specifications=" + specifications +
                 '}';
     }
