@@ -4,7 +4,8 @@ const { initSequelize } = require("./models");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const app = express();
-const { run } = require("./services/Shipping_Order_Service");
+const shippingOrderRoutes = require("./routes/Shipping_Order_Route");
+// const { run } = require("./services/Shipping_Order_Service");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
@@ -18,7 +19,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Middleware
 app.use(express.json());
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
   res.setHeader(
     "Access-Control-Allow-Headers",
     "X-Requested-With,content-type, Authorization"
@@ -32,8 +33,10 @@ app.use((req, res, next) => {
   res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
   next();
 });
+
+app.use("/api/v1/shipping-orders", shippingOrderRoutes);
 // Routes
-run().catch(console.error);
+// run().catch(console.error);
 // Khởi tạo cơ sở dữ liệu và bắt đầu server
 async function main() {
   try {
