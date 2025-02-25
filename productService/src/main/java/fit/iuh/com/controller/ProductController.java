@@ -2,6 +2,8 @@ package fit.iuh.com.controller;
 
 import fit.iuh.com.model.Product;
 import fit.iuh.com.service.ProductService;
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -11,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -21,20 +24,46 @@ public class ProductController {
     public ProductController(ProductService productService) {
         this.productService = productService;
     }
-
     @GetMapping("/products/searchProducts")
     public ResponseEntity<Map<String, Object>> getMyProducts(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "8") int size,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String color,
-            @RequestParam(required = false) Double  price_gte,
-            @RequestParam(required = false) Double  price_lte,
-            @RequestParam(required = false) String category) {
-            System.out.println(category);
-            System.out.println("canh");
+            @RequestParam(required = false) Double price_gte,
+            @RequestParam(required = false) Double price_lte,
+            @RequestParam(required = false) String category,
+            HttpServletRequest request) {
+
+        // In ra tất cả các key của query string để debug
+        Map<String, String[]> parameterMap = request.getParameterMap();
+        parameterMap.forEach((k, v) -> System.out.println("Key: " + k + ", Value: " + Arrays.toString(v)));
+
+        // Lấy các tham số có key bắt đầu bằng "spec_"
+        Map<String, String> specFilters = new HashMap<>();
+        for (String key : parameterMap.keySet()) {
+            if (key.startsWith("spec_")) {
+                // Loại bỏ tiền tố "spec_", trim và chuyển về chữ thường
+                String specKey = key.substring(5).trim().toLowerCase();
+                String[] values = parameterMap.get(key);
+                if (values != null && values.length > 0 && !values[0].trim().isEmpty()) {
+                    specFilters.put(specKey, values[0].trim().toLowerCase());
+                }
+            }
+        }
+        // Chuyển các cặp spec thành danh sách chuỗi "key:value"
+        List<String> specs = specFilters.entrySet().stream()
+                .map(e -> e.getKey() + ":" + e.getValue())
+                .collect(Collectors.toList());
+        Long specCount = (long) specs.size();
+
+        System.out.println("Category: " + category);
+        System.out.println("Specs: " + specs);
+        System.out.println("SpecCount: " + specCount);
+
         try {
-            Page<Product> productPage = productService.getProductsPaged(page, size, search, category, color, price_gte, price_lte);
+            Page<Product> productPage = productService.getProductsPaged(
+                    page, size, search, category, color, price_gte, price_lte, specs, specCount);
             Map<String, Object> response = new HashMap<>();
             response.put("page", page);
             response.put("size", size);
@@ -43,7 +72,8 @@ public class ProductController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", "Đã xảy ra lỗi khi lấy danh sách sản phẩm."));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("error", "Đã xảy ra lỗi khi lấy danh sách sản phẩm."));
         }
     }
     @GetMapping("/products/findByIds")

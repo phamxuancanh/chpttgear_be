@@ -47,9 +47,9 @@ public class ProductService {
         return productRepository.save(updatedProduct);
     }
 
-    public Page<Product> getProductsPaged(int page, int size, String search, String category, String color, Double  price_gte, Double  price_lte) {
+    public Page<Product> getProductsPaged(int page, int size, String search, String category, String color, Double  price_gte, Double  price_lte, List<String> specs, Long specCount) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        return productRepository.searchProducts(search, category, color, price_gte, price_lte, pageable);
+        return productRepository.searchProducts(search, category, color, price_gte, price_lte, specs, specCount, pageable);
     }
     public Page<Product> getProductsForManagement(int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
