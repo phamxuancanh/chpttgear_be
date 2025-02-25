@@ -1,9 +1,9 @@
-const { OrderService } = require("../services/");
+const orderService = require("../services/Order_Service");
 
 // Get all orders
 exports.getAllOrders = async (req, res) => {
   try {
-    const orders = await OrderService.getAllOrders();
+    const orders = await orderService.getAllOrders();
     res.status(200).json(orders);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -14,7 +14,7 @@ exports.getAllOrders = async (req, res) => {
 exports.getOrderById = async (req, res) => {
   const { orderId } = req.params;
   try {
-    const order = await OrderService.getOrderById(orderId);
+    const order = await orderService.getOrderById(orderId);
     res.status(200).json(order);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -22,11 +22,17 @@ exports.getOrderById = async (req, res) => {
 };
 
 // Get orders by user ID
-exports.getOrderByUserId = async (req, res) => {
-  const { userId } = req.params;
+exports.getOrdersByUserId = async (req, res) => {
   try {
-    const orders = await OrderService.getOrderByUserId(userId);
-    res.status(200).json(orders);
+    const { userId } = req.params;
+
+    const orders = await orderService.getOrdersByUserId(userId);
+
+    if (!orders.length) {
+      return res.status(404).json({ message: "Không có đơn hàng nào!" });
+    }
+
+    res.status(200).json({ orders });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -35,13 +41,13 @@ exports.getOrderByUserId = async (req, res) => {
 exports.createOrder = async (req, res) => {
   const orderData = req.body;
   try {
-    const newOrder = await OrderService.createOrder(orderData);
+    const newOrder = await orderService.createOrder(orderData);
 
-    // const emailContext = {
-    //     orderId: newOrder.order_id, 
-    // };
+    const emailContext = {
+      orderId: newOrder.order_id,
+    };
 
-    // await orderService.sendEmail(email, "Xác nhận đơn hàng", "../utils/orderConfirmation.hbs", emailContext);
+    await orderService.sendEmail(orderData.email, "Xác nhận đơn hàng", "../utils/confirmationEmail.hbs", emailContext);
 
     res.status(201).json(newOrder);
   } catch (error) {
@@ -54,7 +60,7 @@ exports.updateOrder = async (req, res) => {
   const { orderId } = req.params;
   const orderData = req.body;
   try {
-    const updatedOrder = await OrderService.updateOrder(orderId, orderData);
+    const updatedOrder = await orderService.updateOrder(orderId, orderData);
     res.status(200).json(updatedOrder);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -65,7 +71,7 @@ exports.updateOrder = async (req, res) => {
 exports.deleteOrder = async (req, res) => {
   const { orderId } = req.params;
   try {
-    const result = await OrderService.deleteOrder(orderId);
+    const result = await orderService.deleteOrder(orderId);
     res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });

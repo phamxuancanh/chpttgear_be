@@ -1,4 +1,4 @@
-const orderItemService = require("../services/OrderItemService");
+const orderItemService = require("../services/OrderItem_Service");
 
 // Lấy tất cả các order item trong đơn hàng
 exports.getAllOrderItemsByOrderId = async (req, res) => {

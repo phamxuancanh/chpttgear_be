@@ -20,6 +20,11 @@ const Order = sequelize.define(
             allowNull: false,
             defaultValue: "PENDING",
         },
+        payment_method: {
+            type: DataTypes.ENUM("PAYPAL", "COD"),
+            allowNull: false,
+            defaultValue: "COD",
+        },
         total_amount: {
             type: DataTypes.DOUBLE,
             allowNull: false,
@@ -39,6 +44,10 @@ const Order = sequelize.define(
             allowNull: true,
         },
         wardCode: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        houseNumber: {
             type: DataTypes.STRING,
             allowNull: true,
         },

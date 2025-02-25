@@ -1,5 +1,5 @@
 const express = require('express');
-const orderItemController = require('../controllers/OrderItemController');
+const orderItemController = require('../controllers/Order_Item_Controller');
 const router = express.Router();
 
 // Lấy tất cả các order item trong đơn hàng
