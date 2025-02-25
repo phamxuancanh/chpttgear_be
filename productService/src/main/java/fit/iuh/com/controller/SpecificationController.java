@@ -16,7 +16,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1")
-//@AllArgsConstructor
+// @AllArgsConstructor
 public class SpecificationController {
     private final SpecificationService specificationService;
 
@@ -58,7 +58,8 @@ public class SpecificationController {
     }
 
     @PutMapping("/specifications/{specId}")
-    public ResponseEntity<Specification> updateSpecification(@RequestBody Specification specification, @PathVariable("specId") UUID specId) {
+    public ResponseEntity<Specification> updateSpecification(@RequestBody Specification specification,
+            @PathVariable("specId") UUID specId) {
         Specification updatedSpecification = specificationService.updateSpecification(specification, specId);
         return ResponseEntity.ok(updatedSpecification);
     }

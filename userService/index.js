@@ -10,6 +10,13 @@ const { API_PREFIX } = require("./utils");
 const IndexRouter = require("./routes/index");
 
 const app = express();
+app.use((req, res, next) => {
+  res.setHeader(
+    "Content-Security-Policy",
+    "script-src 'self' https://apis.google.com"
+  );
+  next();
+});
 app.use(
   cors({
     origin: "http://localhost:3000",

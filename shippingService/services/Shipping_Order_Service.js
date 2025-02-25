@@ -142,9 +142,32 @@ const getOrdersByUserId = async (user_id) => {
     include: ShippingOrderDetail,
   });
 };
+const getOrderByOrderId = async (order_id) => {
+  try {
+    const order = await ShippingOrder.findOne({
+      where: { order_id },
+      include: [
+        {
+          model: ShippingOrderDetail,
+          as: "orderDetails", // Chú ý alias nếu có
+        },
+      ],
+    });
+
+    if (!order) {
+      throw new Error("Không tìm thấy đơn hàng với order_id này");
+    }
+
+    return order;
+  } catch (error) {
+    console.error("Lỗi khi lấy đơn hàng theo order_id:", error);
+    throw new Error("Không thể lấy đơn hàng");
+  }
+};
 
 module.exports = {
   getAllOrders,
   createOrder,
   getOrdersByUserId,
+  getOrderByOrderId,
 };
