@@ -5,12 +5,12 @@ const { Op } = require("sequelize");
 const Stock_In = require("../models/Stock_In");
 const sequelize = require("../configs/database");
 
-const kafka = new Kafka({
-  clientId: process.env.CLIENT_ID || "chptt_gear",
-  brokers: [process.env.KAFKA_BROKER || "kafka:9092"],
-});
+// const kafka = new Kafka({
+//   clientId: process.env.CLIENT_ID || "chptt_gear",
+//   brokers: [process.env.KAFKA_BROKER || "kafka:9092"],
+// });
 
-const producer = kafka.producer(); // Khởi tạo producer
+// const producer = kafka.producer(); // Khởi tạo producer
 
 const createInventory = async (data) => {
   try {
@@ -23,13 +23,13 @@ const createInventory = async (data) => {
       value: `Inventory created with ID: ${newInventory.id}`,
     };
 
-    await producer.connect();
+    // await producer.connect();
 
     // Gửi thông điệp tới topic "shipping-update-quantity"
-    await producer.send({
-      topic: "shipping-update-quantity", // Gửi tới topic shipping-update-quantity
-      messages: [message],
-    });
+    // await producer.send({
+    //   topic: "shipping-update-quantity", // Gửi tới topic shipping-update-quantity
+    //   messages: [message],
+    // });
 
     console.log("Message sent to 'shipping-update-quantity' topic");
 
