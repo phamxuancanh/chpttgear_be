@@ -17,7 +17,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Getter
 @Setter
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class Specification {
     @Id
     @GeneratedValue
@@ -26,6 +26,8 @@ public class Specification {
     private UUID id;
     @Column(name = "spec_name", columnDefinition = "VARCHAR(255)")
     private String name;
+    @Column(name = "spec_name_vi", columnDefinition = "VARCHAR(255)")
+    private String name_vi;
     @Column(name = "spec_value", columnDefinition = "VARCHAR(255)")
     private String value;
     @ManyToOne(fetch = FetchType.EAGER)
