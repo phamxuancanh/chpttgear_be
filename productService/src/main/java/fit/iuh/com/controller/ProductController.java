@@ -126,6 +126,7 @@ public class ProductController {
 
     @PostMapping("/products/createProduct")
     public ResponseEntity<Product> createProduct(@RequestBody Product product) {
+            System.out.println(product);
             Product newProduct = productService.createProduct(product);
         return ResponseEntity.status(HttpStatus.CREATED).allow(HttpMethod.POST).body(newProduct);
     }
