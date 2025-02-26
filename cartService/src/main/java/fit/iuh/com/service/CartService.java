@@ -11,33 +11,41 @@ import java.util.UUID;
 @Service
 @Transactional
 public class CartService {
-    private CartRepository cartRepository;
+    private final CartRepository cartRepository;
 
     public CartService(CartRepository cartRepository) {
         this.cartRepository = cartRepository;
     }
 
-    public List<Cart> getAll() {
+    public List<Cart> getAllCarts() {
         return cartRepository.findAll();
     }
 
-    public Cart getById(UUID id) {
-        return cartRepository.findById(id).orElse(null);
+    public Cart getById(UUID cartId) {
+        return cartRepository.findById(cartId).orElse(null);
     }
 
-    public Cart createOne(Cart cart) {
+    public Cart getCartByUserId(UUID userId) {
+        Cart cart = cartRepository.findCartByUserId(userId);
+        if (cart == null) {
+            cart = new Cart();
+        }
+        return cart;
+    }
+
+    public Cart createCart(Cart cart) {
         return cartRepository.save(cart);
     }
 
-    public Cart updateOne(Cart cart, UUID id) {
-        if (cartRepository.findById(id).isPresent()) {
+    public Cart updateCart(Cart cart, UUID cartId) {
+        if (cartRepository.findById(cartId).isPresent()) {
             return cartRepository.save(cart);
         }
         return null;
     }
 
-    public Cart deleteOne(UUID id) {
-        Cart cart = cartRepository.findById(id).orElse(null);
+    public Cart deleteCart(UUID cartId) {
+        Cart cart = cartRepository.findById(cartId).orElse(null);
         if (cart != null) {
             cartRepository.delete(cart);
         }

@@ -3,6 +3,9 @@ package fit.iuh.com.controller;
 import fit.iuh.com.model.Cart;
 import fit.iuh.com.model.CartItem;
 import fit.iuh.com.service.CartService;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,33 +20,33 @@ public class CartController {
         this.cartService = cartService;
     }
 
-    @GetMapping("/carts")
-    public List<Cart> getAllCart () {
-        return cartService.getAll();
+    @GetMapping("/carts/findAllCart")
+    public ResponseEntity<List<Cart>> getAllCart () {
+        return ResponseEntity.ok(cartService.getAllCarts());
     }
 
-    @GetMapping("/carts/{id}")
-    public Cart getCartById (@PathVariable UUID id) {
-        Cart cart = cartService.getById(id);
+    @GetMapping("/carts/findByUserId/{userId}")
+    public ResponseEntity<Cart> getCartByUserId (@PathVariable("userId") UUID userId) {
+        return ResponseEntity.ok(cartService.getCartByUserId(userId));
+    }
+
+    @GetMapping("/carts/findByCartId/{cartId}")
+    public ResponseEntity<Cart> getCartById (@PathVariable("cartId") UUID cartId) {
+        Cart cart = cartService.getById(cartId);
         if (cart == null) {
             return null;
-        } else {
-            return cart;
         }
+        return ResponseEntity.ok(cart);
     }
 
-    @PostMapping("/carts")
-    public Cart createCart(@RequestBody Cart cart) {
-        return cartService.createOne(cart);
+    @PostMapping("/carts/createCart")
+    public ResponseEntity<Cart> createCart(@RequestBody Cart cart) {
+        Cart newCart = cartService.createCart(cart);
+        return ResponseEntity.status(HttpStatus.CREATED).allow(HttpMethod.POST).body(newCart);
     }
 
-    @PutMapping("/carts/{id}")
-    public Cart updateCart(@RequestBody Cart cart, @PathVariable UUID id) {
-        return cartService.updateOne(cart, id);
-    }
-
-    @DeleteMapping("/carts/{id}")
-    public Cart deleteCart(@PathVariable UUID id) {
-        return cartService.deleteOne(id);
+    @DeleteMapping("/carts/deleteByCartId/{cartId}")
+    public ResponseEntity<Cart> deleteCart(@PathVariable("cartId") UUID cartId) {
+        return ResponseEntity.ok(cartService.deleteCart(cartId));
     }
 }
