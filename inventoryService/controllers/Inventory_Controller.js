@@ -157,6 +157,36 @@ const getQuantityInStockByProductIdAndInventoryId = async (req, res) => {
   }
 };
 
+const getShippingFee = async (req, res) => {
+  try {
+    const { fromDistrict, toDistrict, toWard, weight, height, length, width } =
+      req.body;
+
+    if (
+      !fromDistrict ||
+      !toDistrict ||
+      !toWard ||
+      !weight ||
+      !height ||
+      !length ||
+      !width
+    ) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const fee = await inventoryService.calculateShippingFee(
+      fromDistrict,
+      toDistrict,
+      toWard,
+      weight,
+      { height, length, width }
+    );
+    res.status(200).json({ shippingFee: fee });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createInventory,
   getAllInventory,
@@ -169,4 +199,5 @@ module.exports = {
   checkStock,
   getQuantityInStock,
   getQuantityInStockByProductIdAndInventoryId,
+  getShippingFee,
 };
