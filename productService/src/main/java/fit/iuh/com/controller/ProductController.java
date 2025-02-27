@@ -126,7 +126,7 @@ public class ProductController {
 
     @PostMapping("/products/createProduct")
     public ResponseEntity<Product> createProduct(@RequestBody Product product) {
-            Product newProduct = productService.createProduct(product);
+        Product newProduct = productService.createProduct(product);
         return ResponseEntity.status(HttpStatus.CREATED).allow(HttpMethod.POST).body(newProduct);
     }
 
@@ -149,5 +149,4 @@ public class ProductController {
         List<Product> productList = productService.getAllProducts();
         return ResponseEntity.ok(productList);
     }
-
 }

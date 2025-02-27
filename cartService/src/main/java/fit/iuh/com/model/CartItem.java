@@ -2,12 +2,21 @@ package fit.iuh.com.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.util.UUID;
 
 @Entity
 @Table(name = "cartItems")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class CartItem {
     @Id
     @GeneratedValue
@@ -17,20 +26,8 @@ public class CartItem {
     private UUID productId;
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "cart_id", columnDefinition = "UUID")
-    @JsonIgnoreProperties("cartItems")
     private Cart cart;
     private int quantity;
-
-    public CartItem () {
-
-    }
-
-    public CartItem(UUID id, UUID productId, Cart cart, int quantity) {
-        this.id = id;
-        this.productId = productId;
-        this.cart = cart;
-        this.quantity = quantity;
-    }
 
     public UUID getId() {
         return id;
