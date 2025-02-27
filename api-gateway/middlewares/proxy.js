@@ -68,13 +68,13 @@ module.exports = (app) => {
 
   // Proxy for Cart Service
   app.use(
-    `${API_PREFIX}/cart`,
+    `${API_PREFIX}/carts`,
     // verifyAccessToken,
-    rateLimitAndTimeout("/cart", RATE_LIMIT, TIMEOUT),
+    rateLimitAndTimeout("/carts", RATE_LIMIT, TIMEOUT),
     createProxyMiddleware({
-      target: process.env.CART_SERVICE_URL + `${API_PREFIX}/cart`,
+      target: process.env.CART_SERVICE_URL + `${API_PREFIX}/carts`,
       changeOrigin: true,
-      pathRewrite: { [`^${API_PREFIX}/cart`]: "" },
+      pathRewrite: { [`^${API_PREFIX}/carts`]: "" },
     })
   );
 

@@ -24,4 +24,6 @@ router.get(
   inventoryController.getQuantityInStock
 );
 
+router.post("/calculate-fee", inventoryController.getShippingFee);
+
 module.exports = router;

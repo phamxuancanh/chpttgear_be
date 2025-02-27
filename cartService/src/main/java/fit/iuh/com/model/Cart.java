@@ -1,6 +1,11 @@
 package fit.iuh.com.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.util.List;
@@ -8,6 +13,11 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "carts")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Cart {
     @Id
     @GeneratedValue
@@ -15,17 +25,6 @@ public class Cart {
     @Column(name = "cart_id")
     private UUID id;
     private UUID userId;
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
-    private List<CartItem> cartItems;
-
-    public Cart () {
-
-    }
-
-    public Cart (UUID id, UUID userId) {
-        this.id = id;
-        this.userId = userId;
-    }
 
     public UUID getId() {
         return id;
