@@ -4,6 +4,7 @@ const Inventory = models.Inventory; // Lấy model Inventory
 const { Op } = require("sequelize");
 const Stock_In = require("../models/Stock_In");
 const sequelize = require("../configs/database");
+const axios = require("axios");
 
 // const kafka = new Kafka({
 //   clientId: process.env.CLIENT_ID || "chptt_gear",
@@ -221,6 +222,47 @@ const getQuantityInStockByProductIdAndInventoryId = async (
   }
 };
 
+const calculateShippingFee = async (
+  fromDistrict,
+  toDistrict,
+  toWard,
+  weight,
+  dimensions
+) => {
+  try {
+    const response = await axios.post(
+      "https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee",
+      {
+        service_id: 53321,
+        insurance_value: 500000,
+        coupon: null,
+        from_district_id: fromDistrict,
+        to_district_id: toDistrict,
+        to_ward_code: toWard,
+        height: dimensions.height,
+        length: dimensions.length,
+        weight: weight,
+        width: dimensions.width,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Token: "aa43f060-d157-11ef-b2e4-6ec7c647cc27",
+          ShopId: "195800",
+        },
+      }
+    );
+    console.log(response.data);
+    return response.data?.data?.total || 0;
+  } catch (error) {
+    console.error(
+      "Error calculating shipping fee:",
+      error.response?.data || error.message
+    );
+    throw new Error("Failed to calculate shipping fee");
+  }
+};
+
 module.exports = {
   createInventory,
   getAllInventory,
@@ -234,4 +276,5 @@ module.exports = {
   checkStock,
   getQuantityInStockByProductId,
   getQuantityInStockByProductIdAndInventoryId,
+  calculateShippingFee,
 };

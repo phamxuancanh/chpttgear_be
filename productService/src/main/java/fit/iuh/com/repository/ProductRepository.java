@@ -34,7 +34,6 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
      @Param("specCount") Long specCount,      // Số lượng filter spec truyền xuống
      Pageable pageable
  );
- 
 
     @Query("SELECT p FROM Product p WHERE " +
             "(:name IS NULL OR LOWER(CAST(p.name AS string)) LIKE LOWER(CONCAT('%', CAST(:name AS string), '%'))) " +
