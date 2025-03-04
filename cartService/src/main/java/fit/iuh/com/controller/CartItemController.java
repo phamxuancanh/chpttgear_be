@@ -55,7 +55,6 @@ public class CartItemController {
         if (cartItem == null) {
             return null;
         }
-        System.out.println("new quantity: " + quantityItem.get("quantity"));
         cartItemService.updateQuantityByCartItemId((Integer.valueOf(quantityItem.get("newQuantity")).intValue()), cartItemId );
         return ResponseEntity.ok(cartItem);
     }
