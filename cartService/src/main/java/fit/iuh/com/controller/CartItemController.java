@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -49,12 +50,12 @@ public class CartItemController {
     }
 
     @PutMapping("/carts/cart_items/updateQuantityByCartItemId/{cartItemId}")
-    public ResponseEntity<CartItem> updateQuantityByCartItemId(@RequestBody String quantity, @PathVariable("cartItemId") UUID cartItemId) {
+    public ResponseEntity<CartItem> updateQuantityByCartItemId(@RequestBody Map<String, String> quantityItem, @PathVariable("cartItemId") UUID cartItemId) {
         CartItem cartItem = cartItemService.getById(cartItemId);
         if (cartItem == null) {
             return null;
         }
-        cartItem.setQuantity(Integer.parseInt(quantity));
+        cartItemService.updateQuantityByCartItemId((Integer.valueOf(quantityItem.get("newQuantity")).intValue()), cartItemId );
         return ResponseEntity.ok(cartItem);
     }
 
