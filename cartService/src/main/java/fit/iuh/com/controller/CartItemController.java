@@ -50,19 +50,21 @@ public class CartItemController {
     }
 
     @PutMapping("/carts/cart_items/updateQuantityByCartItemId/{cartItemId}")
-    public ResponseEntity<CartItem> updateQuantityByCartItemId(@RequestBody Map<String, String> quantityItem, @PathVariable("cartItemId") UUID cartItemId) {
+    public ResponseEntity<CartItem> updateQuantityByCartItemId(@RequestBody Map<String, String> quantityItem,
+            @PathVariable("cartItemId") UUID cartItemId) {
         CartItem cartItem = cartItemService.getById(cartItemId);
         if (cartItem == null) {
             return null;
         }
         System.out.println("new quantity: " + quantityItem.get("quantity"));
-        cartItemService.updateQuantityByCartItemId((Integer.valueOf(quantityItem.get("newQuantity")).intValue()), cartItemId );
+        cartItemService.updateQuantityByCartItemId((Integer.valueOf(quantityItem.get("newQuantity")).intValue()),
+                cartItemId);
         return ResponseEntity.ok(cartItem);
     }
 
-
     @PutMapping("/carts/cart_items/updateCartItem/{cartItemId}")
-    public ResponseEntity<CartItem> updateCartItem(@RequestBody CartItem cartItem, @PathVariable("cartItemId") UUID id) {
+    public ResponseEntity<CartItem> updateCartItem(@RequestBody CartItem cartItem,
+            @PathVariable("cartItemId") UUID id) {
         int maxQuantity = 1000;
         if (cartItem.getQuantity() < 0 && cartItem.getQuantity() > maxQuantity) {
             return null;

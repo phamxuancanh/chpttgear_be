@@ -5,8 +5,8 @@ const bodyParser = require("body-parser");
 const PORT = process.env.PORT || 3334;
 const { initSequelize } = require("./models");
 const http = require("http");
-const PaymentRoute = require("./routes/PaymentRoute");
-const TransactionRoute = require("./routes/TransactionRoute");
+const PaymentRoute = require("./routes/Payment_Route");
+const TransactionRoute = require("./routes/Transaction_Route");
 
 const app = express();
 const server = http.createServer(app);
