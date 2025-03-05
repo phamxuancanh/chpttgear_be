@@ -143,11 +143,12 @@ services:
     build: ./orderService
     container_name: order
     environment:
-      DB_NAME: chptt_gear
+      DB_NAME: mixed_chptt_lth
       DB_USER: sa
-      DB_PASS: XX31XbZT5dtyKhELmOvjUAyw8goo9A4z
-      DB_HOST: dpg-cuk3885umphs73bad66g-a.singapore-postgres.render.com
+      DB_PASS: QuCo6aVMvCNfDwcBdD7Be2OJka0rLFiZ
+      DB_HOST: dpg-cuoucjlds78s738ol82g-a.singapore-postgres.render.com
       DB_PORT: 5432
+      DB_DIALECT: postgres
       PORT: 3333
       KAFKA_BROKER: kafka:9092
       CLIENT_HOST: http://localhost:3000
