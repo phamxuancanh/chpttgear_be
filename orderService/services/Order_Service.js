@@ -1,12 +1,12 @@
 const Order = require("../models/Orders");
-const { Kafka } = require('kafkajs');
-const dotenv = require('dotenv');
+const { Kafka } = require("kafkajs");
+const dotenv = require("dotenv");
 const nodemailer = require("nodemailer");
 const path = require("path");
 const fs = require("fs");
 const handlebars = require("handlebars");
 const OrderItem = require("../models/Order_Item");
-const axios = require("axios")
+const axios = require("axios");
 require("dotenv").config();
 
 // dotenv.config();
@@ -40,7 +40,6 @@ exports.getAllOrders = async () => {
     throw new Error(error.message);
   }
 };
-
 
 // Get order by ID
 exports.getOrderById = async (orderId) => {
@@ -84,7 +83,6 @@ exports.getOrdersByUserId = async (userId, page, limit) => {
       order: [["createdAt", "DESC"]],
     });
 
-
     return {
       totalOrders: count, // Tổng số đơn hàng
       totalPages: Math.ceil(count / limit), // Tổng số trang
@@ -96,12 +94,12 @@ exports.getOrdersByUserId = async (userId, page, limit) => {
   }
 };
 
-
 // Create a new order
 exports.createOrder = async (orderData) => {
   try {
     const order = await Order.create(orderData);
-
+    console.log("aaaa");
+    console.log(order);
     // Gửi sự kiện Kafka khi tạo đơn hàng
     // await producer.send({
     //   topic: process.env.KAFKA_TOPIC,
@@ -119,6 +117,7 @@ exports.createOrder = async (orderData) => {
     // console.log(`Sent event ORDER_CREATED to Kafka`);
     return order;
   } catch (error) {
+    console.log(error);
     throw new Error("Error creating order");
   }
 };
@@ -184,7 +183,7 @@ exports.deleteOrder = async (orderId) => {
 };
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -193,7 +192,7 @@ const transporter = nodemailer.createTransport({
 
 exports.sendEmail = async (to, subject, templateName, context) => {
   const filePath = path.join(__dirname, templateName);
-  const source = fs.readFileSync(filePath, 'utf-8');
+  const source = fs.readFileSync(filePath, "utf-8");
   const template = handlebars.compile(source);
   const html = template(context);
 
@@ -209,13 +208,17 @@ exports.sendEmail = async (to, subject, templateName, context) => {
 
 exports.calculateShippingFee = async (params) => {
   try {
-    const response = await axios.post("https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee", params, {
-      headers: {
-        "Content-Type": "application/json",
-        "Token": process.env.GHN_TOKEN,
-        "ShopId": process.env.SHOP_ID
+    const response = await axios.post(
+      "https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee",
+      params,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Token: process.env.GHN_TOKEN,
+          ShopId: process.env.SHOP_ID,
+        },
       }
-    });
+    );
     return response.data;
   } catch (error) {
     console.error("GHN API Error:", error.message);
@@ -223,4 +226,3 @@ exports.calculateShippingFee = async (params) => {
     throw error.response?.data || { message: "Lỗi khi gọi API GHN" };
   }
 };
-
