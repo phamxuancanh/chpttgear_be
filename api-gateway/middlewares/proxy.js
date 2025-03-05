@@ -3,7 +3,7 @@ const rateLimitAndTimeout = require("./rateLimit");
 const verifyAccessToken = require("./authentication");
 const API_PREFIX = require("../utils/utils").API_PREFIX;
 module.exports = (app) => {
-  const RATE_LIMIT = 100; // requests per minute
+  const RATE_LIMIT = 1000; // requests per minute
   const TIMEOUT = 10 * 1000; // 10 seconds
   const publicAPIs = [
     "/signUp",
