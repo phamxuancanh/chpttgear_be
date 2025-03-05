@@ -3,6 +3,7 @@ const axios = require("axios");
 const Order = require("../models/Orders");
 const qs = require("qs");
 require("dotenv").config();
+const xml2js = require("xml2js");
 
 // Get all orders
 exports.getAllOrders = async (req, res) => {
@@ -135,10 +136,23 @@ exports.createPaypalDeposit = async (orderData) => {
 
     const accessToken = tokenResponse.data.access_token;
 
+    const exchangeRate = await getExchangeRate();
+
+    if (!exchangeRate || isNaN(exchangeRate)) {
+      throw new Error("Lỗi: Không lấy được tỷ giá USD hợp lệ.");
+    }
+
+    console.log("Tỷ giá USD:", exchangeRate);
+
+    const totalAmountVnd = orderData.total_amount;
+    const totalAmountUsd = (totalAmountVnd / exchangeRate).toFixed(2).toString();
+    console.log("totalAmountVND", totalAmountVnd)
+    console.log("totalAmountUSD", totalAmountUsd)
+
     // Tạo đơn hàng mới với trạng thái PENDING
     const newOrder = await Order.create({
       user_id: orderData.user_id,
-      total_amount: orderData.total_amount,
+      total_amount: totalAmountVnd,
       shipping_amount: orderData.shipping_amount || 0.0,
       status: "PENDING",
       payment_method: "PAYPAL",
@@ -147,13 +161,6 @@ exports.createPaypalDeposit = async (orderData) => {
       wardCode: orderData.wardCode,
       houseNumber: orderData.houseNumber,
     });
-
-    // console.log("🟢 orderData.total_amount:", newOrder.total_amount.toFixed(2));
-    // console.log("🟢 typeof:", typeof newOrder.total_amount);
-    // console.log("🟢 PAYPAL_CLIENT_ID:", process.env.PAYPAL_CLIENT_ID);
-    // console.log("🟢 PAYPAL_CLIENT_SECRET:", process.env.PAYPAL_CLIENT_SECRET);
-    // console.log("🟢 PAYPAL_BUSINESS_EMAIL:", process.env.PAYPAL_BUSINESS_EMAIL);
-
 
     const paymentResponse = await axios.post(
       "https://api-m.sandbox.paypal.com/v2/checkout/orders",
@@ -166,7 +173,7 @@ exports.createPaypalDeposit = async (orderData) => {
             payee: { email_address: process.env.PAYPAL_BUSINESS_EMAIL },
             amount: {
               currency_code: "USD",
-              value: newOrder.total_amount.toFixed(2).toString(),
+              value: totalAmountUsd.toString(),
             },
           },
         ],
@@ -294,5 +301,33 @@ exports.paypalOrderCancel = async (req, res) => {
   } catch (error) {
     console.error("Error in paypalOrderCancel:", error);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+const getExchangeRate = async () => {
+  try {
+    const response = await axios.get(
+      "https://portal.vietcombank.com.vn/Usercontrols/TVPortal.TyGia/pXML.aspx?b=8"
+    );
+
+    const result = await xml2js.parseStringPromise(response.data, { explicitArray: false });
+
+    console.log("🔍 Dữ liệu JSON nhận được:", JSON.stringify(result, null, 2));
+
+    if (!result.ExrateList || !result.ExrateList.Exrate) {
+      throw new Error("Dữ liệu tỷ giá không hợp lệ.");
+    }
+
+    const rates = Array.isArray(result.ExrateList.Exrate)
+      ? result.ExrateList.Exrate
+      : [result.ExrateList.Exrate];
+
+    const usdRate = rates.find((rate) => rate.$.CurrencyCode === "USD");
+    if (!usdRate) throw new Error("Không tìm thấy tỷ giá USD.");
+
+    return parseFloat(usdRate.$.Sell.replace(",", "")); // Truy cập vào `$.Sell`
+  } catch (error) {
+    console.error("❌ Lỗi khi lấy tỷ giá:", error.message);
+    throw error;
   }
 };
