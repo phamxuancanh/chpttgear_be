@@ -54,6 +54,7 @@ exports.getOrdersByUserId = async (req, res) => {
 
 exports.createOrder = async (req, res) => {
   const orderData = req.body;
+  console.log(orderData)
   try {
     let result;
     if (orderData.payment_method === "PAYPAL") {
