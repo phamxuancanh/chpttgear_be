@@ -76,11 +76,11 @@ services:
     build: ./shippingService
     container_name: shipping
     environment:
-      POSTGRES_HOST: dpg-cuk3885umphs73bad66g-a.singapore-postgres.render.com
+      POSTGRES_HOST: dpg-cv3vqo9u0jms73ee72hg-a.singapore-postgres.render.com
       POSTGRES_PORT: 5432
       POSTGRES_USER: sa
-      POSTGRES_PASSWORD: XX31XbZT5dtyKhELmOvjUAyw8goo9A4z
-      POSTGRES_DB: chptt_gear
+      POSTGRES_PASSWORD: Gyb6QZCn9AqnbP8kLceq6du0fJGpOfeT
+      POSTGRES_DB: chptt_gear_ot8g
       KAFKA_BROKER: kafka:9092
       SHIPPING_UPDATE_QUANTITY_TOPIC: shipping-update-quantity
       SHIPPING_CREATE_SHIPMENT_TOPIC: shipping-create-shipment
@@ -100,11 +100,11 @@ services:
     build: ./inventoryService
     container_name: inventory
     environment:
-      POSTGRES_HOST: dpg-cuk3885umphs73bad66g-a.singapore-postgres.render.com
+      POSTGRES_HOST: dpg-cv3vqo9u0jms73ee72hg-a.singapore-postgres.render.com
       POSTGRES_PORT: 5432
       POSTGRES_USER: sa
-      POSTGRES_PASSWORD: XX31XbZT5dtyKhELmOvjUAyw8goo9A4z
-      POSTGRES_DB: chptt_gear
+      POSTGRES_PASSWORD: Gyb6QZCn9AqnbP8kLceq6du0fJGpOfeT
+      POSTGRES_DB: chptt_gear_ot8g
       KAFKA_BROKER: kafka:9092
       INVENTORY_UPDATE_QUANTITY_TOPIC: inventory-update-quantity
       INVENTORY_GET_QUANTITY_TOPIC: inventory-get-quantity
@@ -124,10 +124,10 @@ services:
     build: ./userService
     container_name: user
     environment:
-      DB_NAME: chptt_gear
+      DB_NAME: chptt_gear_ot8g
       DB_USER: sa
-      DB_PASS: XX31XbZT5dtyKhELmOvjUAyw8goo9A4z
-      DB_HOST: dpg-cuk3885umphs73bad66g-a.singapore-postgres.render.com
+      DB_PASS: Gyb6QZCn9AqnbP8kLceq6du0fJGpOfeT
+      DB_HOST: dpg-cv3vqo9u0jms73ee72hg-a.singapore-postgres.render.com
       DB_PORT: 5432
       CLIENT_PORT: 3000
       PORT: 1111
@@ -191,9 +191,9 @@ services:
     # depends_on:
     #   - kafka # Kafka cần chạy trước
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://dpg-cuk3885umphs73bad66g-a.singapore-postgres.render.com/chptt_gear
+      SPRING_DATASOURCE_URL: jdbc:postgresql://dpg-cuoucjlds78s738ol82g-a.singapore-postgres.render.com/chptt_gear_ot8g
       SPRING_DATASOURCE_USERNAME: sa
-      SPRING_DATASOURCE_PASSWORD: XX31XbZT5dtyKhELmOvjUAyw8goo9A4z
+      SPRING_DATASOURCE_PASSWORD: QuCo6aVMvCNfDwcBdD7Be2OJka0rLFiZ
       SPRING_APPLICATION_NAME: productService
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "true"
@@ -211,9 +211,9 @@ services:
     # depends_on:
     #   - kafka # Kafka cần chạy trước
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://dpg-cuk3885umphs73bad66g-a.singapore-postgres.render.com/chptt_gear
+      SPRING_DATASOURCE_URL: jdbc:postgresql://dpg-cuoucjlds78s738ol82g-a.singapore-postgres.render.com/chptt_gear_ot8g
       SPRING_DATASOURCE_USERNAME: sa
-      SPRING_DATASOURCE_PASSWORD: XX31XbZT5dtyKhELmOvjUAyw8goo9A4z
+      SPRING_DATASOURCE_PASSWORD: QuCo6aVMvCNfDwcBdD7Be2OJka0rLFiZ
       SPRING_APPLICATION_NAME: cartService
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "true"
