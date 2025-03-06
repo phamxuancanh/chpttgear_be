@@ -133,46 +133,6 @@ const signIn = async (req, res, next) => {
     }
 }
 
-// const signUp = async (req, res, next) => {
-//     console.log('SIGN UP')
-//     try {
-//         const { firstName, lastName, username, email, password } = req.body.data
-//         const userByEmail = await models.User.findOne({ where: { email } })
-//         if (userByEmail) {
-//             return res.status(401).json({ code: 401, message: 'Email is already registered.' })
-//         }
-//         const hashedPassword = await bcrypt.hash(password, 10)
-//         const newUser = await models.User.create({
-//             firstName,
-//             lastName,
-//             username,
-//             password: hashedPassword,
-//             email,
-//             type: 'local',
-//             emailVerified: false,
-//             roleId: 3
-//         })
-//         const emailToken = jwt.sign({ id: newUser.id, email: newUser.email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
-
-//         const confirmationUrl = `http://localhost:${process.env.CLIENT_PORT}/verify/email?token=${emailToken}`
-//         // template HTML
-//         const templatePath = path.join(__dirname, '..', 'templates', 'verify_email_template.html')
-//         const htmlContent = fs.readFileSync(templatePath, 'utf8')
-//         const htmlWithLink = htmlContent.replace('${VERIFY_URL}', confirmationUrl)
-//         const mailOptions = {
-//             from: 'canhmail292@gmail.com',
-//             to: email,
-//             subject: 'Email Confirmation',
-//             html: htmlWithLink
-//         }
-//         await transporter.sendMail(mailOptions)
-//         return res.status(200).json({ success: true, message: 'Confirmation email sent. Please check your email.' })
-//     } catch (error) {
-//         console.log(error)
-//         next(error)
-//     }
-// }
-
 const signUp = async (req, res, next) => {
     console.log('SIGN UP')
     try {
@@ -482,6 +442,7 @@ const signInOrRegisterWithGoogle = async (req, res) => {
             key: encryptedRole,
             emailVerified: true,
             score: existingUser.score,
+            address: existingUser.address,
         }
 
         return res.status(200).json({ success: true, accessToken, user: userResult })
@@ -506,7 +467,8 @@ const getUserById = async (req, res, next) => {
                 'address',
                 'birthOfDate',
                 'createdAt',
-                'type'
+                'type',
+                'address'
             ]
         })
 
@@ -530,7 +492,8 @@ const getUserById = async (req, res, next) => {
             address: user.address,
             birthOfDate: user.birthOfDate ? user.birthOfDate.toISOString().split('T')[0] : '',
             createdAt: user.createdAt.toISOString().split('T')[0],
-            type: user.type
+            type: user.type,
+            address: user.address
         }
         res.json(userResult)
     } catch (error) {
