@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -15,7 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Getter
 @Setter
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class Category {
     @Id
     @GeneratedValue
@@ -24,12 +23,13 @@ public class Category {
     private UUID id;
     @Column(columnDefinition = "VARCHAR(255)")
     private String name;
+    @Column(columnDefinition = "VARCHAR(255)")
+    private String name_vi;
     @Column(columnDefinition = "TEXT")
     private String description;
-//    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
-//    @JsonIgnore
-//    private List<Product> productList;
-
+    // @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    // @JsonIgnore
+    // private List<Product> productList;
 
     public UUID getId() {
         return id;
@@ -45,6 +45,14 @@ public class Category {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getName_Vi() {
+        return name_vi;
+    }
+
+    public void setName_Vi(String name_vi) {
+        this.name_vi = name_vi;
     }
 
     public String getDescription() {
