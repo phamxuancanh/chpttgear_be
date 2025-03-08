@@ -31,15 +31,33 @@ require("dotenv").config();
 // startKafkaProducer();  // Gọi hàm để kết nối producer với Kafka broker
 
 // Get all orders
-exports.getAllOrders = async () => {
+exports.getAllOrders = async (page = 1, pageSize = 10) => {
   try {
-    const orders = await Order.findAll();
-    return orders;
+    const offset = (page - 1) * pageSize;
+    const { count, rows: orders } = await Order.findAndCountAll({
+      order: [['createdAt', 'DESC']],
+      include: [
+        {
+          model: OrderItem,
+          as: "order_item",
+        },
+      ],
+      limit: pageSize,
+      offset: offset,
+    });
+
+    return {
+      totalOrders: count,
+      totalPages: Math.ceil(count / pageSize),
+      currentPage: page,
+      orders,
+    };
   } catch (error) {
     console.error("Lỗi khi lấy danh sách đơn hàng:", error);
     throw new Error(error.message);
   }
 };
+
 
 // Get order by ID
 exports.getOrderById = async (orderId) => {

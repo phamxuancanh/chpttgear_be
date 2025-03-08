@@ -8,12 +8,18 @@ const xml2js = require("xml2js");
 // Get all orders
 exports.getAllOrders = async (req, res) => {
   try {
-    const orders = await orderService.getAllOrders();
-    res.status(200).json(orders);
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 10;
+
+    const ordersData = await orderService.getAllOrders(page, pageSize);
+
+    return res.status(200).json(ordersData);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Lỗi khi lấy danh sách đơn hàng:", error);
+    return res.status(500).json({ message: "Lỗi khi lấy danh sách đơn hàng" });
   }
 };
+
 
 // Get order by ID
 exports.getOrderById = async (req, res) => {
