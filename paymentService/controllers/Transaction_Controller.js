@@ -2,19 +2,11 @@ const transactionService = require("../services/Transaction_Service");
 
 exports.createTransaction = async (req, res) => {
   try {
-    const { payment_id, transaction_code, status, response_message } = req.body;
+    const transactionData = req.body;
 
-    const transaction = await transactionService.createTransaction({
-      payment_id,
-      transaction_code,
-      status,
-      response_message,
-    });
+    const transaction = await transactionService.createTransaction(transactionData);
 
-    res.status(201).json({
-      message: "Transaction created successfully",
-      data: transaction,
-    });
+    res.status(201).json(transaction);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
