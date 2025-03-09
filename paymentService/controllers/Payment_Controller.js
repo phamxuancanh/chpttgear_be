@@ -2,10 +2,11 @@ const paymentService = require("../services/Payment_Service");
 
 exports.createPayment = async (req, res) => {
   try {
-    const payment = await paymentService.createPayment(req.body);
-    res.status(201).json({ success: true, data: payment });
+    const paymentData = req.body
+    const payment = await paymentService.createPayment(paymentData);
+    res.status(201).json(payment);
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json(error.message);
   }
 };
 
