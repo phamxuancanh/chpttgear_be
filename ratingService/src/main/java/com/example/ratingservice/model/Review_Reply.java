@@ -15,7 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Getter
 @Setter
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class Review_Reply {
     @Id
     @UuidGenerator(style = UuidGenerator.Style.RANDOM)
@@ -24,7 +24,7 @@ public class Review_Reply {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "review_id", nullable = false)
-    private Review review;
+    private Review_Reply review;
 
     @Column(name = "user_id", nullable = false)
     private UUID userId;

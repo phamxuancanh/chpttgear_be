@@ -1,6 +1,7 @@
 package fit.iuh.com.service;
 
 import fit.iuh.com.repository.ProductRepository;
+import fit.iuh.com.dto.ProductWithCategory_DTO;
 import fit.iuh.com.model.Product;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
@@ -34,8 +35,7 @@ public class ProductService {
     }
 
     public Product updateProduct(Product product, UUID id) {
-        productRepository.findById(id).orElseThrow(()
-            -> new RuntimeException("Product not found"));
+        productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
         Product updatedProduct = productRepository.findById(id).orElse(null);
         System.out.println(updatedProduct.getName());
         updatedProduct.setDescription(product.getDescription());
@@ -47,10 +47,13 @@ public class ProductService {
         return productRepository.save(updatedProduct);
     }
 
-    public Page<Product> getProductsPaged(int page, int size, String search, String category, String color, Double  price_gte, Double  price_lte, List<String> specs, Long specCount) {
+    public Page<Product> getProductsPaged(int page, int size, String search, String category, String color,
+            Double price_gte, Double price_lte, List<String> specs, Long specCount) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        return productRepository.searchProducts(search, category, color, price_gte, price_lte, specs, specCount, pageable);
+        return productRepository.searchProducts(search, category, color, price_gte, price_lte, specs, specCount,
+                pageable);
     }
+
     public Page<Product> getProductsForManagement(int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
         return productRepository.getProductForManagement(pageable);
@@ -62,6 +65,10 @@ public class ProductService {
 
     public List<Product> getProductsByIds(List<String> productIds) {
         return productRepository.findProductsByListIds(productIds);
+    }
+
+    public List<ProductWithCategory_DTO> getProductWithCategory() {
+        return productRepository.getAllProductWithCategory();
     }
 
     public Product updatePriceByProductId(UUID productId, double price) {

@@ -165,7 +165,13 @@ const getOrderByOrderId = async (order_id) => {
     throw new Error("Không thể lấy đơn hàng");
   }
 };
-const calculateShippingFee = async (toDistrict, toWard, weight, ShopId) => {
+const calculateShippingFee = async (
+  toDistrict,
+  toWard,
+  total_weight,
+  ShopId
+) => {
+  console.log(toDistrict, toWard, total_weight, ShopId);
   try {
     const response = await axios.post(
       "https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee",
@@ -173,7 +179,8 @@ const calculateShippingFee = async (toDistrict, toWard, weight, ShopId) => {
         service_type_id: 2,
         to_district_id: toDistrict,
         to_ward_code: toWard,
-        weight: weight,
+        weight: total_weight,
+        ShopId: ShopId,
       },
       {
         headers: {

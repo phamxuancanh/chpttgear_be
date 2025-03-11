@@ -1,5 +1,6 @@
 package fit.iuh.com.controller;
 
+import fit.iuh.com.dto.ProductWithCategory_DTO;
 import fit.iuh.com.model.Product;
 import fit.iuh.com.service.ProductService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,6 +25,7 @@ public class ProductController {
     public ProductController(ProductService productService) {
         this.productService = productService;
     }
+
     @GetMapping("/products/searchProducts")
     public ResponseEntity<Map<String, Object>> getMyProducts(
             @RequestParam(defaultValue = "1") int page,
@@ -76,15 +78,23 @@ public class ProductController {
                     .body(Collections.singletonMap("error", "Đã xảy ra lỗi khi lấy danh sách sản phẩm."));
         }
     }
+
     @GetMapping("/products/findByIds")
     public ResponseEntity<List<Product>> getProducts(@RequestParam List<String> productIds) {
         List<Product> products = productService.getProductsByIds(productIds);
         return ResponseEntity.ok(products);
     }
+
     @GetMapping("products/getSuggestions")
     public ResponseEntity<List<Product>> getSuggestions(@RequestParam(required = false) String search) {
         List<Product> suggestions = productService.getSuggestions(search);
         return ResponseEntity.ok(suggestions);
+    }
+
+    @GetMapping("products/getAllProductWithCategory")
+    public ResponseEntity<List<ProductWithCategory_DTO>> getAllProductWithCategory() {
+        List<ProductWithCategory_DTO> products = productService.getProductWithCategory();
+        return ResponseEntity.ok(products);
     }
 
     /****************/
@@ -120,7 +130,8 @@ public class ProductController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", "Đã xảy ra lỗi khi lấy danh sách sản phẩm."));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("error", "Đã xảy ra lỗi khi lấy danh sách sản phẩm."));
         }
     }
 
@@ -137,7 +148,8 @@ public class ProductController {
     }
 
     @PutMapping("/products/{productId}/price")
-    public ResponseEntity<Product> updatePriceByProductId(@PathVariable("productId") UUID productId, @RequestBody Map<String, Double> request) {
+    public ResponseEntity<Product> updatePriceByProductId(@PathVariable("productId") UUID productId,
+            @RequestBody Map<String, Double> request) {
         double newPrice = request.get("price").doubleValue();
         Product updatedProduct = productService.updatePriceByProductId(productId, newPrice);
         return ResponseEntity.ok(updatedProduct);
@@ -145,7 +157,7 @@ public class ProductController {
 
     /***********************/
     @GetMapping("/products")
-    public ResponseEntity<List<Product>> getAllProduct(){
+    public ResponseEntity<List<Product>> getAllProduct() {
         List<Product> productList = productService.getAllProducts();
         return ResponseEntity.ok(productList);
     }
