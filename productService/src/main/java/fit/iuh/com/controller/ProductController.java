@@ -27,7 +27,7 @@ public class ProductController {
     @GetMapping("/products/searchProducts")
     public ResponseEntity<Map<String, Object>> getMyProducts(
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "8") int size,
+            @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String color,
             @RequestParam(required = false) Double price_gte,
