@@ -34,7 +34,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use("/api/v1/shipping-orders", shippingOrderRoutes);
+app.use("/api/v1/shipping", shippingOrderRoutes);
 // Routes
 // run().catch(console.error);
 // Khởi tạo cơ sở dữ liệu và bắt đầu server

@@ -5,8 +5,9 @@ const bodyParser = require("body-parser");
 const PORT = process.env.PORT || 3334;
 const { initSequelize } = require("./models");
 const http = require("http");
-const PaymentRoute = require("./routes/PaymentRoute");
-const TransactionRoute = require("./routes/TransactionRoute");
+const PaymentRoute = require("./routes/Payment_Route");
+const TransactionRoute = require("./routes/Transaction_Route");
+const RefundRoute = require("./routes/Refund_Route");
 
 const app = express();
 const server = http.createServer(app);
@@ -16,7 +17,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: "*",
+    origin: "http://localhost:3000",
+    credentials: true,
   })
 );
 app.use(bodyParser.json());
@@ -24,7 +26,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Middleware cho CORS
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
   res.setHeader(
     "Access-Control-Allow-Headers",
     "X-Requested-With,content-type, Authorization"
@@ -51,6 +53,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/v1/payments", PaymentRoute);
 app.use("/api/v1/payments/transactions", TransactionRoute);
+app.use("/api/v1/payments/refunds", RefundRoute);
 
 // Khởi tạo cơ sở dữ liệu và bắt đầu server
 async function main() {

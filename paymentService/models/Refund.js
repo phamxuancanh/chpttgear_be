@@ -2,8 +2,8 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const { v4: uuidv4 } = require("uuid");
 
-const Transaction = sequelize.define('Transaction', {
-    transaction_id: {
+const Refund = sequelize.define('Refund', {
+    refund_id: {
         type: DataTypes.UUID,
         defaultValue: uuidv4,
         allowNull: false,
@@ -23,25 +23,18 @@ const Transaction = sequelize.define('Transaction', {
         allowNull: false,
         defaultValue: 0.0,
     },
-    transaction_type: {
-        type: DataTypes.ENUM("DEBIT", "CREDIT", "FEE", "COD", "REFUND"),
-        defaultValue: 'COD',
-        allowNull: false
-    },
-    status: {
-        type: DataTypes.ENUM('INIT', 'PENDING', 'SUCCESS', 'FAILED', 'CANCELLED'),
-        defaultValue: 'INIT',
+    reason: {
+        type: DataTypes.STRING,
         allowNull: false,
     },
-    response_message: {
-        type: DataTypes.STRING,
-        allowNull: true,
+    status: {
+        type: DataTypes.ENUM("PENDING", "PROCESSED", "FAILED"),
+        defaultValue: "PENDING"
     },
 }, {
-    tableName: 'transaction',
+    tableName: 'refund',
     timestamps: true,
     updatedAt: 'updatedAt',
     createdAt: 'createdAt',
 });
-
-module.exports = Transaction;
+module.exports = Refund;

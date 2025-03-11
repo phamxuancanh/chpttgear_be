@@ -7,9 +7,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
-@Service
-@Transactional
-public class Review_Service {
+
+public class Review_Service implements IReviewService{
     private Review_DAO review_DAO;
 
     public Review_Service(Review_DAO review_DAO) {

@@ -2,20 +2,14 @@ const Transaction = require('../models/Transaction');
 const Payment = require('../models/Payment');
 const { v4: uuidv4 } = require('uuid');
 
-exports.createTransaction = async ({ payment_id, transaction_code, status, response_message }) => {
+exports.createTransaction = async (transactionData) => {
     try {
-        const paymentExists = await Payment.findByPk(payment_id);
+        const paymentExists = await Payment.findByPk(transactionData.payment_id);
         if (!paymentExists) {
             throw new Error('Payment not found');
         }
 
-        const transaction = await Transaction.create({
-            transaction_id: uuidv4(),
-            payment_id,
-            transaction_code,
-            status,
-            response_message,
-        });
+        const transaction = await Transaction.create(transactionData);
 
         return transaction;
     } catch (error) {

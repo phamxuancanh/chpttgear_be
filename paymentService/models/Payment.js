@@ -13,12 +13,17 @@ const Payment = sequelize.define('Payment', {
         type: DataTypes.UUID,
         allowNull: false,
     },
+    user_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+    },
     payment_method: {
         type: DataTypes.ENUM('COD', 'PAYPAL'),
         allowNull: false,
     },
     status: {
         type: DataTypes.ENUM('PENDING', 'PAID', 'FAILED', 'CANCELLED'),
+        defaultValue: 'PENDING',
         allowNull: false,
     },
     amount: {

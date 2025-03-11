@@ -66,6 +66,7 @@
 
 // module.exports = { run };
 
+const { default: axios } = require("axios");
 const ShippingOrder = require("../models/Shipping_Order");
 const ShippingOrderDetail = require("../models/Shipping_Order_Detail");
 const { Op } = require("sequelize");
@@ -164,10 +165,39 @@ const getOrderByOrderId = async (order_id) => {
     throw new Error("Không thể lấy đơn hàng");
   }
 };
+const calculateShippingFee = async (toDistrict, toWard, weight, ShopId) => {
+  try {
+    const response = await axios.post(
+      "https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee",
+      {
+        service_type_id: 2,
+        to_district_id: toDistrict,
+        to_ward_code: toWard,
+        weight: weight,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Token: "aa43f060-d157-11ef-b2e4-6ec7c647cc27",
+          ShopId: ShopId,
+        },
+      }
+    );
+    console.log(response.data);
+    return response.data?.data?.total || 0;
+  } catch (error) {
+    console.error(
+      "Error calculating shipping fee:",
+      error.response?.data || error.message
+    );
+    throw new Error("Failed to calculate shipping fee");
+  }
+};
 
 module.exports = {
   getAllOrders,
   createOrder,
   getOrdersByUserId,
   getOrderByOrderId,
+  calculateShippingFee,
 };

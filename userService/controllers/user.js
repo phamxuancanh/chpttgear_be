@@ -166,12 +166,19 @@ const signUp = async (req, res, next) => {
             html: htmlWithLink
         }
         await transporter.sendMail(mailOptions)
-        return res.status(200).json({ success: true, message: 'Confirmation email sent. Please check your email.' })
+
+        // Trả về id của user trong response
+        return res.status(200).json({
+            success: true,
+            message: 'Confirmation email sent. Please check your email.',
+            id: newUser.id
+        })
     } catch (error) {
         console.log(error)
         next(error)
     }
 }
+
 const verifyEmail = async (req, res, next) => {
     console.log('VERIFY EMAILLLLLL')
     try {
@@ -182,7 +189,7 @@ const verifyEmail = async (req, res, next) => {
             return res.status(400).json({ message: 'Missing token.' })
         }
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
-        console.log(decoded, 'decoded') 
+        console.log(decoded, 'decoded')
         const { id, email } = decoded
 
         const user = await models.User.findOne({ where: { id, email } })
@@ -435,6 +442,7 @@ const signInOrRegisterWithGoogle = async (req, res) => {
             key: encryptedRole,
             emailVerified: true,
             score: existingUser.score,
+            address: existingUser.address,
         }
 
         return res.status(200).json({ success: true, accessToken, user: userResult })
@@ -459,7 +467,8 @@ const getUserById = async (req, res, next) => {
                 'address',
                 'birthOfDate',
                 'createdAt',
-                'type'
+                'type',
+                'address'
             ]
         })
 
@@ -483,7 +492,8 @@ const getUserById = async (req, res, next) => {
             address: user.address,
             birthOfDate: user.birthOfDate ? user.birthOfDate.toISOString().split('T')[0] : '',
             createdAt: user.createdAt.toISOString().split('T')[0],
-            type: user.type
+            type: user.type,
+            address: user.address
         }
         res.json(userResult)
     } catch (error) {

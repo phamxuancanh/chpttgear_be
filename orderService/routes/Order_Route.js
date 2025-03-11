@@ -20,4 +20,10 @@ router.put('/:orderId', orderController.updateOrder);
 // Delete an order
 router.delete('/:orderId', orderController.deleteOrder);
 
+router.post("/calculate-fee", orderController.getShippingFee);
+
+router.get("/paypal/cancel", orderController.paypalOrderCancel);
+
+router.get("/paypal/success", orderController.paypalOrderSuccess);
+
 module.exports = router;

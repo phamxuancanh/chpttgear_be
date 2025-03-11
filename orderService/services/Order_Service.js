@@ -1,12 +1,13 @@
 const Order = require("../models/Orders");
-const { Kafka } = require('kafkajs');
-const dotenv = require('dotenv');
+const { Kafka } = require("kafkajs");
+const dotenv = require("dotenv");
 const nodemailer = require("nodemailer");
 const path = require("path");
 const fs = require("fs");
 const handlebars = require("handlebars");
 const OrderItem = require("../models/Order_Item");
-
+const axios = require("axios");
+require("dotenv").config();
 
 // dotenv.config();
 
@@ -30,10 +31,27 @@ const OrderItem = require("../models/Order_Item");
 // startKafkaProducer();  // Gọi hàm để kết nối producer với Kafka broker
 
 // Get all orders
-exports.getAllOrders = async () => {
+exports.getAllOrders = async (page = 1, pageSize = 10) => {
   try {
-    const orders = await Order.findAll();
-    return orders;
+    const offset = (page - 1) * pageSize;
+    const { count, rows: orders } = await Order.findAndCountAll({
+      order: [['createdAt', 'DESC']],
+      include: [
+        {
+          model: OrderItem,
+          as: "order_item",
+        },
+      ],
+      limit: pageSize,
+      offset: offset,
+    });
+
+    return {
+      totalOrders: count,
+      totalPages: Math.ceil(count / pageSize),
+      currentPage: page,
+      orders,
+    };
   } catch (error) {
     console.error("Lỗi khi lấy danh sách đơn hàng:", error);
     throw new Error(error.message);
@@ -44,20 +62,7 @@ exports.getAllOrders = async () => {
 // Get order by ID
 exports.getOrderById = async (orderId) => {
   try {
-    const order = await Order.findByPk(orderId);
-    if (!order) {
-      throw new Error("Order not found");
-    }
-    return order;
-  } catch (error) {
-    throw new Error("Error fetching order");
-  }
-};
-
-exports.getOrdersByUserId = async (userId) => {
-  try {
-    const orders = await Order.findAll({
-      where: { user_id: userId },
+    const order = await Order.findByPk(orderId, {
       include: [
         {
           model: OrderItem,
@@ -66,7 +71,42 @@ exports.getOrdersByUserId = async (userId) => {
       ],
     });
 
-    return orders;
+    if (!order) {
+      throw new Error("Order not found");
+    }
+
+    return order;
+  } catch (error) {
+    console.error("Error fetching order:", error);
+    throw new Error("Error fetching order");
+  }
+};
+
+exports.getOrdersByUserId = async (userId, page, limit) => {
+  try {
+    // Tính toán offset (bỏ qua số lượng đơn hàng của các trang trước)
+    const offset = (page - 1) * limit;
+
+    const { count, rows: orders } = await Order.findAndCountAll({
+      where: { user_id: userId },
+      include: [
+        {
+          model: OrderItem,
+          as: "order_item",
+        },
+      ],
+      distinct: true,
+      limit,
+      offset,
+      order: [["createdAt", "DESC"]],
+    });
+
+    return {
+      totalOrders: count, // Tổng số đơn hàng
+      totalPages: Math.ceil(count / limit), // Tổng số trang
+      currentPage: page, // Trang hiện tại
+      orders, // Danh sách đơn hàng
+    };
   } catch (error) {
     throw new Error("Lỗi khi lấy danh sách đơn hàng: " + error.message);
   }
@@ -76,7 +116,8 @@ exports.getOrdersByUserId = async (userId) => {
 exports.createOrder = async (orderData) => {
   try {
     const order = await Order.create(orderData);
-
+    console.log("aaaa");
+    console.log(order);
     // Gửi sự kiện Kafka khi tạo đơn hàng
     // await producer.send({
     //   topic: process.env.KAFKA_TOPIC,
@@ -94,6 +135,7 @@ exports.createOrder = async (orderData) => {
     // console.log(`Sent event ORDER_CREATED to Kafka`);
     return order;
   } catch (error) {
+    console.log(error);
     throw new Error("Error creating order");
   }
 };
@@ -159,7 +201,7 @@ exports.deleteOrder = async (orderId) => {
 };
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -168,7 +210,7 @@ const transporter = nodemailer.createTransport({
 
 exports.sendEmail = async (to, subject, templateName, context) => {
   const filePath = path.join(__dirname, templateName);
-  const source = fs.readFileSync(filePath, 'utf-8');
+  const source = fs.readFileSync(filePath, "utf-8");
   const template = handlebars.compile(source);
   const html = template(context);
 
@@ -180,4 +222,25 @@ exports.sendEmail = async (to, subject, templateName, context) => {
   };
 
   await transporter.sendMail(mailOptions);
+};
+
+exports.calculateShippingFee = async (params) => {
+  try {
+    const response = await axios.post(
+      "https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee",
+      params,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Token: process.env.GHN_TOKEN,
+          ShopId: process.env.SHOP_ID,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("GHN API Error:", error.message);
+    console.error("GHN API Full Error:", error);
+    throw error.response?.data || { message: "Lỗi khi gọi API GHN" };
+  }
 };

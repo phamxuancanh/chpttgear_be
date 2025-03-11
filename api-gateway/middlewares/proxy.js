@@ -3,7 +3,7 @@ const rateLimitAndTimeout = require("./rateLimit");
 const verifyAccessToken = require("./authentication");
 const API_PREFIX = require("../utils/utils").API_PREFIX;
 module.exports = (app) => {
-  const RATE_LIMIT = 100; // requests per minute
+  const RATE_LIMIT = 1000; // requests per minute
   const TIMEOUT = 10 * 1000; // 10 seconds
   const publicAPIs = [
     "/signUp",
@@ -64,7 +64,7 @@ module.exports = (app) => {
   );
 
 
-  
+
 
   // Proxy for Cart Service
   app.use(
@@ -96,7 +96,7 @@ module.exports = (app) => {
     // verifyAccessToken,
     rateLimitAndTimeout("/payments", RATE_LIMIT, TIMEOUT),
     createProxyMiddleware({
-      target: process.env.PAYMENT_SERVICE_URL + `${API_PREFIX}/payment`,
+      target: process.env.PAYMENT_SERVICE_URL + `${API_PREFIX}/payments`,
       changeOrigin: true,
       pathRewrite: { [`^${API_PREFIX}/payments`]: "" },
     })
