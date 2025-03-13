@@ -1,136 +1,142 @@
-const JWT = require('jsonwebtoken')
-const crypto = require('crypto')
-const { models } = require('../models')
-const client = require('../middlewares/connectRedis')
-const signAccessToken = async (userId) => {
-  const payload = {
-    userId
-  }
-  const secret = process.env.ACCESS_TOKEN_SECRET
-  const options = {
-    expiresIn: '5h'
-  }
+const JWT = require("jsonwebtoken");
+const crypto = require("crypto");
+const { models } = require("../models");
+// const client = require('../middlewares/connectRedis')
 
-  try {
-    const token = await new Promise((resolve, reject) => {
-      JWT.sign(payload, secret, options, (err, token) => {
-        if (err) return reject(err)
-        resolve(token)
-      })
-    })
-
-    await client.set(userId.toString(), token, 'EX', 18000)
-    return token
-  } catch (error) {
-    throw new Error('Error signing access token')
-  }
-}
-// const signAccessToken = async (payload) => {
+// const signAccessToken = async (userId) => {
+//   const payload = {
+//     userId
+//   }
 //   const secret = process.env.ACCESS_TOKEN_SECRET
 //   const options = {
 //     expiresIn: '5h'
 //   }
-//   console.log('payload', payload)
-//   const userId = payload.userId
+
 //   try {
 //     const token = await new Promise((resolve, reject) => {
-//       JWT.sign({ userId }, secret, options, (err, token) => {
+//       JWT.sign(payload, secret, options, (err, token) => {
 //         if (err) return reject(err)
 //         resolve(token)
 //       })
 //     })
-//     console.log('userId', userId)
-//     const user = await models.User.findByPk(userId)
-//     user.accessToken = token
-//     user.expireAccessToken = new Date(Date.now() + 5 * 60 * 60 * 1000)
-//     await user.save()
 
+//     await client.set(userId.toString(), token, 'EX', 18000)
 //     return token
 //   } catch (error) {
-//     console.log(error)
 //     throw new Error('Error signing access token')
 //   }
 // }
+const signAccessToken = async (payload) => {
+  const secret = process.env.ACCESS_TOKEN_SECRET;
+  const options = {
+    expiresIn: "5h",
+  };
+  console.log("payload", payload);
+  const userId = payload.userId;
+  try {
+    const token = await new Promise((resolve, reject) => {
+      JWT.sign({ userId }, secret, options, (err, token) => {
+        if (err) return reject(err);
+        resolve(token);
+      });
+    });
+    console.log("userId", userId);
+    const user = await models.User.findByPk(userId);
+    user.accessToken = token;
+    user.expireAccessToken = new Date(Date.now() + 5 * 60 * 60 * 1000);
+    await user.save();
+
+    return token;
+  } catch (error) {
+    console.log(error);
+    throw new Error("Error signing access token");
+  }
+};
 
 const verifyAccessToken = (req, res, next) => {
-  const authHeader = req.headers.authorization
+  const authHeader = req.headers.authorization;
 
   if (!authHeader) {
-    return res.status(401).json({ error: { message: 'Unauthorized 1' } })
+    return res.status(401).json({ error: { message: "Unauthorized 1" } });
   }
-  const [scheme, token] = authHeader.split(' ')
+  const [scheme, token] = authHeader.split(" ");
 
-  if (scheme !== 'Bearer' || !token) {
-    return res.status(401).json({ error: { message: 'Unauthorized 1' } })
+  if (scheme !== "Bearer" || !token) {
+    return res.status(401).json({ error: { message: "Unauthorized 1" } });
   }
 
-  JWT.verify(token, process.env.ACCESS_TOKEN_SECRET, { algorithms: ['HS256'] }, async (err, payload) => {
-    if (err) {
-      if (err.name === 'JsonWebTokenError') {
-        return res.status(401).json({ error: { message: 'Unauthorized 2' } })
+  JWT.verify(
+    token,
+    process.env.ACCESS_TOKEN_SECRET,
+    { algorithms: ["HS256"] },
+    async (err, payload) => {
+      if (err) {
+        if (err.name === "JsonWebTokenError") {
+          return res.status(401).json({ error: { message: "Unauthorized 2" } });
+        }
+        return res.status(401).json({ error: { message: err.message } });
       }
-      return res.status(401).json({ error: { message: err.message } })
+
+      const { userId } = payload;
+      if (!userId) {
+        return res.status(401).json({ error: { message: "Unauthorized 3" } });
+      }
+
+      const user = await models.User.findByPk(userId);
+      if (!user || user.accessToken !== token) {
+        return res.status(401).json({ error: { message: "Unauthorized 4" } });
+      }
+
+      req.userId = userId;
+      req.payload = payload;
+
+      setTimeout(() => {
+        next();
+      }, 100);
     }
-
-    const { userId } = payload
-    if (!userId) {
-      return res.status(401).json({ error: { message: 'Unauthorized 3' } })
-    }
-
-    const user = await models.User.findByPk(userId)
-    if (!user || user.accessToken !== token) {
-      return res.status(401).json({ error: { message: 'Unauthorized 4' } })
-    }
-
-    req.userId = userId
-    req.payload = payload
-
-    setTimeout(() => {
-      next()
-    }, 100)
-  })
-}
+  );
+};
 
 const signRefreshToken = async (userId) => {
   return new Promise(async (resolve, reject) => {
-    const refreshToken = crypto.randomBytes(64).toString('hex')
+    const refreshToken = crypto.randomBytes(64).toString("hex");
 
     try {
-      const user = await models.User.findByPk(userId)
-      user.refreshToken = refreshToken
-      user.expireRefreshToken = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
-      await user.save()
-      resolve(refreshToken)
+      const user = await models.User.findByPk(userId);
+      user.refreshToken = refreshToken;
+      user.expireRefreshToken = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
+      await user.save();
+      resolve(refreshToken);
     } catch (err) {
-      reject(err)
+      reject(err);
     }
-  })
-}
+  });
+};
 
 const verifyRefreshToken = (refreshToken) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const user = await models.User.findOne({ where: { refreshToken } })
+      const user = await models.User.findOne({ where: { refreshToken } });
       if (!user) {
-        return reject({ status: 403, message: 'Token not found' })
+        return reject({ status: 403, message: "Token not found" });
       }
-      const now = new Date()
+      const now = new Date();
       if (user.expireRefreshToken < now) {
-        user.refreshToken = null
-        user.expireRefreshToken = null
-        await user.save()
-        return reject({ status: 403, message: 'Token has expired' })
+        user.refreshToken = null;
+        user.expireRefreshToken = null;
+        await user.save();
+        return reject({ status: 403, message: "Token has expired" });
       }
-      resolve(user.id)
+      resolve(user.id);
     } catch (err) {
-      reject(err)
+      reject(err);
     }
-  })
-}
+  });
+};
 
 module.exports = {
   signAccessToken,
   verifyAccessToken,
   signRefreshToken,
-  verifyRefreshToken
-}
+  verifyRefreshToken,
+};
