@@ -63,9 +63,6 @@ module.exports = (app) => {
     })
   );
 
-
-
-
   // Proxy for Cart Service
   app.use(
     `${API_PREFIX}/carts`,
@@ -105,7 +102,7 @@ module.exports = (app) => {
   // Proxy for Shipping Service
   app.use(
     `${API_PREFIX}/shipping`,
-    verifyAccessToken,
+    // verifyAccessToken,
     rateLimitAndTimeout("/shipping", RATE_LIMIT, TIMEOUT),
     createProxyMiddleware({
       target: process.env.SHIPPING_SERVICE_URL + `${API_PREFIX}/shipping`,

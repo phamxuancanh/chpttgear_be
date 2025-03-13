@@ -46,18 +46,17 @@ const getOrderByOrderId = async (req, res) => {
   }
 };
 const getShippingFee = async (req, res) => {
+  console.log("abc");
   try {
-    const { toDistrict, toWard, weight, ShopId } = req.body;
-    console.log(toDistrict, toWard, weight, ShopId);
-
-    if (!toDistrict || !toWard || !weight || !ShopId) {
+    const { toDistrict, toWard, total_weight, ShopId } = req.body;
+    if (!toDistrict || !toWard || !total_weight || !ShopId) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
     const fee = await shippingOrderService.calculateShippingFee(
       toDistrict,
       toWard,
-      weight,
+      total_weight,
       ShopId
     );
     res.status(200).json({ shippingFee: fee });
