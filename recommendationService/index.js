@@ -1,18 +1,45 @@
+const express = require("express");
+const cors = require("cors");
+const morgan = require("morgan");
+const path = require("path");
+const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
+const IndexRouter = require("./routes/index");
 
-require('dotenv').config();
-const express = require('express');
 const app = express();
-const PORT = process.env.PORT || 3334;
+app.use((req, res, next) => {
+  res.setHeader(
+    "Content-Security-Policy",
+    "script-src 'self' https://apis.google.com"
+  );
+  next();
+});
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
 
-// Middleware
 app.use(express.json());
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(morgan("combined"));
+app.use(express.json({ limit: "50mb" }));
 
-// Routes
-app.get('/', (req, res) => {
-    res.send('Welcome to Recommendation Service!');
-});
+app.use("/static", express.static(path.join(__dirname, "public")));
+app.use("/", IndexRouter);
 
-// Start server
-app.listen(PORT, () => {
-    console.log(`Recommendation Service is running on http://localhost:${PORT}`);
-});
+async function startServer() {
+  try {
+    app.listen(process.env.PORT, () => {
+      console.log("Server is running");
+    });
+  } catch (error) {
+    console.error("Error starting server:", error);
+  }
+}
+
+startServer();

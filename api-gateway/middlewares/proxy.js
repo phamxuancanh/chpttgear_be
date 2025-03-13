@@ -139,18 +139,17 @@ module.exports = (app) => {
       pathRewrite: { [`^${API_PREFIX}/notifications`]: "" },
     })
   );
-
-  // Proxy for Recommendation Service
   app.use(
     `${API_PREFIX}/recommendations`,
-    verifyAccessToken,
+    (req, res, next) => {
+      console.log("req.path", req.params);
+      next();
+    },
     rateLimitAndTimeout("/recommendations", RATE_LIMIT, TIMEOUT),
     createProxyMiddleware({
-      target:
-        process.env.RECOMMENDATION_SERVICE_URL +
-        `${API_PREFIX}/recommendations`,
+      target: process.env.RECOMMENDATION_SERVICE_URL + `${API_PREFIX}`,
       changeOrigin: true,
-      pathRewrite: { [`^${API_PREFIX}/recommendations`]: "" },
+      pathRewrite: { [`^${API_PREFIX}`]: "" },
     })
   );
 };
