@@ -171,6 +171,7 @@ const calculateShippingFee = async (
   total_weight,
   ShopId
 ) => {
+  console.log("abc");
   console.log(toDistrict, toWard, total_weight, ShopId);
   try {
     const response = await axios.post(

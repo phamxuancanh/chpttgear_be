@@ -1,5 +1,13 @@
 version: "3.9"
 services:
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - app_network
   # zookeeper:
   #   image: confluentinc/cp-zookeeper:7.4.1
   #   container_name: zookeeper
@@ -64,6 +72,7 @@ services:
       - payment
       - product
       - cart
+      - redis
       # - notification
       # - recommendation
       # - rating
@@ -132,8 +141,14 @@ services:
       CLIENT_PORT: 3000
       PORT: 1111
       ACCESS_TOKEN_SECRET: chptt@20075851
-    # depends_on:
-    #   - kafka
+      CLOUDINARY_CLOUD_NAME: dsgm7mp23
+      CLOUDINARY_API_KEY: 687534721666436
+      CLOUDINARY_API_SECRET: Rf7RBNDCGZFw_B1Tvsv3odTCMhg
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      #   - kafka
+      - redis
     ports:
       - "1111:1111"
     networks:

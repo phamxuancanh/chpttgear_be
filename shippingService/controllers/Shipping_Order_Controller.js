@@ -46,6 +46,7 @@ const getOrderByOrderId = async (req, res) => {
   }
 };
 const getShippingFee = async (req, res) => {
+  console.log("abc");
   try {
     const { toDistrict, toWard, total_weight, ShopId } = req.body;
     if (!toDistrict || !toWard || !total_weight || !ShopId) {
