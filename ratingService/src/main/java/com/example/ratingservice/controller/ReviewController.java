@@ -1,49 +1,45 @@
 package com.example.ratingservice.controller;
 
-import com.example.ratingservice.model.Review_Reply;
-import com.example.ratingservice.service.Review_Service;
+import com.example.ratingservice.Repository.IReviewRepository;
+import com.example.ratingservice.entity.Review;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/review")
+@CrossOrigin(origins = "*")
 public class ReviewController {
+    @Autowired
+    private final IReviewRepository iReviewRepository;
 
-    private final Review_Service reviewService;
-
-    public ReviewController(Review_Service reviewService) {
-        this.reviewService = reviewService;
+    public ReviewController(IReviewRepository iReviewRepository) {
+        this.iReviewRepository = iReviewRepository;
     }
 
-    @GetMapping("/reviews")
-    public List<Review_Reply> getAllReviews() {
-        return reviewService.getAll();
-    }
-
-    @GetMapping("/reviews/{id}")
-    public Review getReviewById(@PathVariable UUID id) {
-        Review review = reviewService.getById(id);
-        if (review == null) {
-            return null;
-        } else {
-            return review;
+    @GetMapping("/{productId}")
+    public ResponseEntity<List<IReviewRepository.ReviewProjection>> getReviewByProductId(@PathVariable UUID productId) {
+        List<IReviewRepository.ReviewProjection> reviews = iReviewRepository.findByProductId(productId);
+        if (reviews.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
+        return ResponseEntity.ok(reviews);
     }
 
-    @PostMapping("/reviews/")
-    public Review createReview(@RequestBody Review review) {
-        return reviewService.createOne(review);
+    @PostMapping()
+    public ResponseEntity<String> createReview(@RequestBody Review param) {
+        iReviewRepository.save(param);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Review created successfully!");
     }
 
-    @PutMapping("/reviews/{id}")
-    public Review updateReview(@RequestBody Review review, @PathVariable UUID id) {
-        return reviewService.updateOne(review, id);
+    @PutMapping()
+    public ResponseEntity<String> updateReview(@RequestBody Review param) {
+        iReviewRepository.save(param);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Review updated successfully!");
     }
 
-    @DeleteMapping("/reviews/{id}")
-    public Review deleteReviewById(@PathVariable UUID id) {
-        return reviewService.deleteOne(id);
-    }
 }
