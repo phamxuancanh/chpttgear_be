@@ -168,6 +168,22 @@ exports.createPaypalDeposit = async (orderData) => {
       houseNumber: orderData.houseNumber,
     });
 
+
+    const newPayment = await axios.post(`${process.env.GATEWAY_HOST}/api/v1/payments/`, {
+      order_id: newOrder.order_id,
+      user_id: orderData.user_id,
+      payment_method: "PAYPAL",
+      amount: totalAmountVnd
+    });
+
+    const newTransactions = await axios.post(`${process.env.GATEWAY_HOST}/api/v1/payments/transactions/`, {
+      payment_id: newPayment.data.payment_id,
+      user_id: orderData.user_id,
+      transaction_type: "DEBIT",
+      amount: totalAmountVnd,
+      status: "INIT"
+    });
+
     const paymentResponse = await axios.post(
       "https://api-m.sandbox.paypal.com/v2/checkout/orders",
       {
@@ -187,8 +203,8 @@ exports.createPaypalDeposit = async (orderData) => {
           brand_name: "Your Brand Name",
           landing_page: "BILLING",
           user_action: "PAY_NOW",
-          return_url: `${process.env.CLIENT_HOST}/paypal/success?orderId=${newOrder.order_id}`,
-          cancel_url: `${process.env.CLIENT_HOST}/paypal/cancel?orderId=${newOrder.order_id}`,
+          return_url: `${process.env.CLIENT_HOST}/paypal/success?orderId=${newOrder.order_id}&transactionId=${newTransactions.data.transaction_id}`,
+          cancel_url: `${process.env.CLIENT_HOST}/paypal/cancel?orderId=${newOrder.order_id}&transactionId=${newTransactions.data.transaction_id}`,
         },
       },
       {
