@@ -156,10 +156,16 @@ public class ProductController {
     }
 
     /***********************/
+    @GetMapping("/products/{id}/similar")
+    public ResponseEntity<List<Product>> getSimilarProducts(@PathVariable UUID id) {
+        List<Product> similarProducts = productService.getSimilarProducts(id);
+        return ResponseEntity.ok(similarProducts);
+    }
     @GetMapping("/products")
     public ResponseEntity<List<Product>> getAllProduct() {
         List<Product> productList = productService.getAllProducts();
         return ResponseEntity.ok(productList);
     }
+
 
 }
