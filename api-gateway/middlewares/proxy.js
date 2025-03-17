@@ -113,14 +113,13 @@ module.exports = (app) => {
 
   // Proxy for Review & Rating Service
   app.use(
-    `${API_PREFIX}/reviews`,
-    verifyAccessToken,
-    rateLimitAndTimeout("/reviews", RATE_LIMIT, TIMEOUT),
+    `${API_PREFIX}/review`,
+    // verifyAccessToken,
+    rateLimitAndTimeout("/review", RATE_LIMIT, TIMEOUT),
     createProxyMiddleware({
-      target:
-        process.env.REVIEW_RATING_SERVICE_URL + `${API_PREFIX}/review_rating`,
+      target: process.env.REVIEW_RATING_SERVICE_URL + `${API_PREFIX}/review`,
       changeOrigin: true,
-      pathRewrite: { [`^${API_PREFIX}/reviews`]: "" },
+      pathRewrite: { [`^${API_PREFIX}/review`]: "" },
     })
   );
 
