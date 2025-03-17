@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -78,5 +79,22 @@ public class ProductService {
         }
         product.setPrice(price);
         return productRepository.save(product);
+    }
+        public List<Product> getSimilarProducts(UUID productId) {
+        Product product = productRepository.findById(productId).orElse(null);
+        if (product == null) {
+            return Collections.emptyList();
+        }
+
+        return productRepository.findSimilarProducts(
+                productId,
+                product.getCategory().getId(),
+                product.getBrand(),
+                product.getColor(),
+                product.getSize(),
+                // product.getPrice() - 10000000,
+                // product.getPrice() + 10000000,
+                PageRequest.of(0, 5)
+        );
     }
 }

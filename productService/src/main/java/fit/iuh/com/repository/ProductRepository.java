@@ -54,5 +54,26 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "LEFT JOIN p.category c " +
             "ORDER BY p.id ASC")
     List<ProductWithCategory_DTO> getAllProductWithCategory();
+    @Query("SELECT p FROM Product p WHERE " +
+    "p.id <> :productId " +  // Không lấy sản phẩm đang chọn
+//     "AND p.price BETWEEN :minPrice AND :maxPrice " +
+    "AND (" +
+    "  (p.category.id = :categoryId) OR " +  // Ưu tiên cùng category
+    "  (:brand IS NOT NULL AND p.brand = :brand) OR " +  // Nếu có brand, kiểm tra brand
+    "  (:color IS NOT NULL AND p.color = :color) OR " +  // Nếu có color, kiểm tra color
+    "  (:size IS NOT NULL AND p.size = :size) " +        // Nếu có size, kiểm tra size
+    ") " +
+    "ORDER BY p.id ASC")
+List<Product> findSimilarProducts(
+    @Param("productId") UUID productId,
+    @Param("categoryId") UUID categoryId,
+    @Param("brand") String brand,
+    @Param("color") String color,
+    @Param("size") String size,
+//     @Param("minPrice") Double minPrice,
+//     @Param("maxPrice") Double maxPrice,
+    Pageable pageable);
+
+
 
 }
