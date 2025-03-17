@@ -1,6 +1,6 @@
-package com.example.ratingservice.Service;
+package com.example.Service;
 
-import com.example.ratingservice.entity.Review;
+import com.example.entity.Review;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

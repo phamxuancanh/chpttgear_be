@@ -1,6 +1,6 @@
-package com.example.ratingservice.Repository;
+package com.example.repository;
 
-import com.example.ratingservice.entity.Review;
+import com.example.entity.Review;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

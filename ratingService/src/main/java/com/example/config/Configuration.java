@@ -1,4 +1,4 @@
-package com.example.ratingservice.config;
+package com.example.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -11,9 +11,12 @@ public class Configuration {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")
-                        .allowedOrigins("*")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS");
+                registry.addMapping("/api/**")
+                        .allowedOrigins("http://localhost:3000")
+                        .allowedMethods("PUT", "DELETE", "GET", "POST", "OPTIONS")
+                        .allowedHeaders("header1", "header2", "header3")
+                        .exposedHeaders("Authorization", "X-Requested-With", "Content-Type")
+                        .allowCredentials(false).maxAge(3600);
             }
         };
     }

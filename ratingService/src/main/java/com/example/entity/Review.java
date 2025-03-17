@@ -1,4 +1,4 @@
-package com.example.ratingservice.entity;
+package com.example.entity;
 
 import jakarta.persistence.*;
 
