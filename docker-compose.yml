@@ -72,11 +72,10 @@ services:
       - payment
       - product
       - cart
-      - redis
+      # - redis
       - rating
       # - notification
-      # - recommendation
-      # - rating
+      - recommendation
     ports:
       - "6868:6868"
     networks:
@@ -148,10 +147,28 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
     depends_on:
-      #   - kafka
+      # - kafka
       - redis
     ports:
       - "1111:1111"
+    networks:
+      - app_network
+
+  recommendation:
+    build: ./recommendationService
+    container_name: recommendation
+    environment:
+      PORT: 1112
+      GEMINI_API_KEY: AIzaSyCHrFVJlM8a6MqJmwsm_AaplPFPdKBATyw
+      PROJECT_ID: gen-lang-client-0094505557
+      LOCATION: asia-southeast1
+      GOOGLE_APPLICATION_CREDENTIALS: ./config/gcp-key.json
+
+    # depends_on:
+    # - kafka
+    # - redis
+    ports:
+      - "1112:1112"
     networks:
       - app_network
 
@@ -236,6 +253,26 @@ services:
       SERVER_PORT: 4445 # Đảm bảo rằng server chạy đúng cổng
     ports:
       - "4445:4445" # Mở cổng 4444
+    networks:
+      - app_network # Mạng tùy chỉnh để giao tiếp giữa các container
+
+  rating:
+    build:
+      context: ./ratingService # Thư mục chứa ứng dụng Java
+      dockerfile: Dockerfile # Tệp Dockerfile
+    container_name: rating
+    # depends_on:
+    #   - kafka # Kafka cần chạy trước
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://dpg-cv3vqo9u0jms73ee72hg-a.singapore-postgres.render.com/chptt_gear_ot8g
+      SPRING_DATASOURCE_USERNAME: sa
+      SPRING_DATASOURCE_PASSWORD: Gyb6QZCn9AqnbP8kLceq6du0fJGpOfeT
+      SPRING_APPLICATION_NAME: ratingService
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+      SERVER_PORT: 5555 # Đảm bảo rằng server chạy đúng cổng
+    ports:
+      - "5555:5555"
     networks:
       - app_network # Mạng tùy chỉnh để giao tiếp giữa các container
 
