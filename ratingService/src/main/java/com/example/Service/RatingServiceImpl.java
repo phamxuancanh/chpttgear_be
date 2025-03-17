@@ -1,7 +1,7 @@
-package com.example.ratingservice.Service;
+package com.example.Service;
 
-import com.example.ratingservice.Repository.IReviewRepository;
-import com.example.ratingservice.entity.Review;
+import com.example.repository.IReviewRepository;
+import com.example.entity.Review;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
