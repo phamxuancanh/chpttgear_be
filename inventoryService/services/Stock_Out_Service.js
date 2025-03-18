@@ -1,7 +1,15 @@
+const Inventory = require("../models/Inventory");
 const StockOut = require("../models/Stock_Out");
 
 const getAllStockOut = async () => {
-  return await StockOut.findAll();
+  return await StockOut.findAll({
+    include: [
+      {
+        model: Inventory,
+        as: "inventory", // Đảm bảo alias đúng với định nghĩa trong association
+      },
+    ],
+  });
 };
 
 const getStockOutById = async (id) => {
