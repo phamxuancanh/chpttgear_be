@@ -20,17 +20,9 @@ const Shipping_Order = sequelize.define(
       allowNull: false,
     },
     status: {
-      type: DataTypes.ENUM(
-        "PENDING",
-        "CONFIRMED",
-        "PROCESSING",
-        "ON_HOLD",
-        "CANCELLED",
-        "REFUNDED",
-        "FAILED"
-      ),
+      type: DataTypes.ENUM("CONFIRMED", "SHIPPED", "RECEIVED", "RATING"),
       allowNull: false,
-      defaultValue: "PENDING",
+      defaultValue: "CONFIRMED",
     },
     shipping_date: {
       type: DataTypes.DATE,
@@ -58,17 +50,25 @@ const Shipping_Order = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: false,
     },
-    provinceCode: {
-      type: DataTypes.STRING,
-      allowNull: true,
+    required_note: {
+      type: DataTypes.ENUM(
+        "CHOTHUHANG",
+        "CHOXEMHANGKHONGTHU",
+        "KHONGCHOXEMHANG"
+      ),
+      allowNull: false,
     },
-    districtCode: {
-      type: DataTypes.STRING,
-      allowNull: true,
+    note: {
+      type: DataTypes.TEXT,
+      allowNull: false,
     },
-    wardCode: {
-      type: DataTypes.STRING,
-      allowNull: true,
+    order_name: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+    },
+    total_fee: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
     },
   },
   {

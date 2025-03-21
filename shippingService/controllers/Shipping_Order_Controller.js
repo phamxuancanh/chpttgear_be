@@ -11,6 +11,8 @@ const getAll = async (req, res) => {
 };
 
 const create = async (req, res) => {
+  console.log("tạo don shipping");
+  console.log(req.body);
   try {
     const newOrder = await shippingOrderService.createOrder(req.body);
     res.status(201).json(newOrder);
