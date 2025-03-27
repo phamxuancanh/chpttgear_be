@@ -13,7 +13,7 @@ router.get(
 );
 router.get(
   "/getByProductId/:product_id",
-  stockOutController.getStockInByProductId
+  stockOutController.getStockOutByProductId
 );
 
 module.exports = router;
