@@ -20,6 +20,15 @@ exports.getAllOrders = async (req, res) => {
   }
 };
 
+exports.getAllOrderWithNoPaging = async (req, res) => {
+  try {
+    const orders = await orderService.getAllOrderWithNoPaging();
+    res.status(200).json(orders);
+  } catch (error) {
+    res.status(500).json(error.message);
+  }
+};
+
 
 // Get order by ID
 exports.getOrderById = async (req, res) => {
@@ -65,20 +74,21 @@ exports.createOrder = async (req, res) => {
   try {
     let result;
     if (orderData.payment_method === "PAYPAL") {
-      result = await this.createPaypalDeposit(orderData);
+      return await this.createPaypalDeposit(orderData, res);
     } else if (orderData.payment_method === "COD") {
       result = await orderService.createOrder(orderData);
-      const emailContext = {
-        orderId: result.order_id,
-      };
+      // const emailContext = {
+      //   orderId: result.order_id,
+      //   orderDate: result.createdAt,
+      //   orderTotal: result.total_amount,
+      //   address: result.houseNumber,
+      //   products: 
+      // };
 
-      await orderService.sendEmail(orderData.email, "Xác nhận đơn hàng", "../utils/confirmationEmail.hbs", emailContext);
+      // await orderService.sendEmail(orderData.email, "Xác nhận đơn hàng", "../utils/confirmationEmail.hbs", emailContext);
     } else {
       return res.status(400).json({ error: "Invalid payment method" });
     }
-
-
-
     res.status(201).json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -122,13 +132,25 @@ exports.getShippingFee = async (req, res) => {
   }
 };
 
-exports.createPaypalDeposit = async (orderData) => {
+exports.createPaypalDeposit = async (reqOrData, res) => {
+  const orderData = reqOrData?.body || reqOrData;
+  if (!orderData || typeof orderData !== "object") {
+    throw new Error("Lỗi: Dữ liệu đơn hàng không hợp lệ hoặc bị thiếu.");
+  }
+
+  console.log("📥 Data nhận vào createPaypalDeposit:", orderData);
+
   try {
+
     const clientId = process.env.PAYPAL_CLIENT_ID;
     const secret = process.env.PAYPAL_CLIENT_SECRET;
+    if (!clientId || !secret) {
+      throw new Error("Lỗi: PAYPAL_CLIENT_ID hoặc PAYPAL_CLIENT_SECRET không tồn tại.");
+    }
+
     const auth = Buffer.from(`${clientId}:${secret}`).toString("base64");
 
-    // Lấy access token từ PayPal
+    console.log("🔑 Gọi PayPal để lấy access token...");
     const tokenResponse = await axios.post(
       "https://api-m.sandbox.paypal.com/v1/oauth2/token",
       qs.stringify({ grant_type: "client_credentials" }),
@@ -143,47 +165,50 @@ exports.createPaypalDeposit = async (orderData) => {
     const accessToken = tokenResponse.data.access_token;
 
     const exchangeRate = await getExchangeRate();
-
     if (!exchangeRate || isNaN(exchangeRate)) {
       throw new Error("Lỗi: Không lấy được tỷ giá USD hợp lệ.");
     }
 
-    console.log("Tỷ giá USD:", exchangeRate);
+    const totalAmountVnd = orderData?.total_amount;
+    const prepaidAmountVnd = orderData?.prepaid_amount || 0;
+    const paymentAmountVnd = orderData.status === "PENDING_PAYMENT" ? prepaidAmountVnd : totalAmountVnd;
 
-    const totalAmountVnd = orderData.total_amount;
-    const totalAmountUsd = (totalAmountVnd / exchangeRate).toFixed(2).toString();
-    console.log("totalAmountVND", totalAmountVnd)
-    console.log("totalAmountUSD", totalAmountUsd)
+    const paymentAmountUsd = (paymentAmountVnd / exchangeRate).toFixed(2).toString();
 
-    // Tạo đơn hàng mới với trạng thái PENDING
     const newOrder = await Order.create({
-      user_id: orderData.user_id,
+      user_id: orderData?.user_id,
       total_amount: totalAmountVnd,
       shipping_amount: orderData.shipping_amount || 0.0,
-      status: "PENDING",
-      payment_method: "PAYPAL",
-      provinceCode: orderData.provinceCode,
-      districtCode: orderData.districtCode,
-      wardCode: orderData.wardCode,
-      houseNumber: orderData.houseNumber,
+      status: orderData?.status,
+      payment_method: orderData?.payment_method,
+      provinceCode: orderData?.provinceCode,
+      districtCode: orderData?.districtCode,
+      wardCode: orderData?.wardCode,
+      houseNumber: orderData?.houseNumber,
+      prepaid_amount: prepaidAmountVnd,
     });
-
 
     const newPayment = await axios.post(`${process.env.GATEWAY_HOST}/api/v1/payments/`, {
       order_id: newOrder.order_id,
       user_id: orderData.user_id,
       payment_method: "PAYPAL",
-      amount: totalAmountVnd
+      amount: paymentAmountVnd,
     });
 
-    const newTransactions = await axios.post(`${process.env.GATEWAY_HOST}/api/v1/payments/transactions/`, {
-      payment_id: newPayment.data.payment_id,
-      user_id: orderData.user_id,
-      transaction_type: "DEBIT",
-      amount: totalAmountVnd,
-      status: "INIT"
-    });
 
+
+    const newTransaction = await axios.post(
+      `${process.env.GATEWAY_HOST}/api/v1/payments/transactions/`,
+      {
+        payment_id: newPayment.data.payment_id,
+        user_id: orderData.user_id,
+        transaction_type: "DEBIT",
+        amount: paymentAmountVnd,
+        status: "INIT",
+      }
+    );
+
+    console.log("🔗 Gửi request tạo đơn hàng PayPal...");
     const paymentResponse = await axios.post(
       "https://api-m.sandbox.paypal.com/v2/checkout/orders",
       {
@@ -195,16 +220,16 @@ exports.createPaypalDeposit = async (orderData) => {
             payee: { email_address: process.env.PAYPAL_BUSINESS_EMAIL },
             amount: {
               currency_code: "USD",
-              value: totalAmountUsd.toString(),
+              value: paymentAmountUsd.toString(),
             },
           },
         ],
         application_context: {
-          brand_name: "Your Brand Name",
+          brand_name: "CHPTT GEAR",
           landing_page: "BILLING",
           user_action: "PAY_NOW",
-          return_url: `${process.env.CLIENT_HOST}/paypal/success?orderId=${newOrder.order_id}&transactionId=${newTransactions.data.transaction_id}`,
-          cancel_url: `${process.env.CLIENT_HOST}/paypal/cancel?orderId=${newOrder.order_id}&transactionId=${newTransactions.data.transaction_id}`,
+          return_url: `${process.env.CLIENT_HOST}/paypal/success?orderId=${newOrder.order_id}&transactionId=${newTransaction.data.transaction_id}`,
+          cancel_url: `${process.env.CLIENT_HOST}/paypal/cancel?orderId=${newOrder.order_id}&transactionId=${newTransaction.data.transaction_id}`,
         },
       },
       {
@@ -215,17 +240,18 @@ exports.createPaypalDeposit = async (orderData) => {
       }
     );
 
+    const approvalUrl = paymentResponse.data.links.find((link) => link.rel === "approve")?.href;
+    if (!approvalUrl) {
+      throw new Error("Lỗi: Không tìm thấy URL phê duyệt thanh toán từ PayPal.");
+    }
 
-    const approvalUrl = paymentResponse.data.links.find(
-      (link) => link.rel === "approve"
-    ).href;
-
-    return { order: newOrder, approvalUrl };
+    return res.status(201).json({ order: newOrder, approvalUrl });
   } catch (error) {
-    console.error("Error in createPaypalDeposit:", error.response?.data || error.message);
+    console.error("🚨 Lỗi trong createPaypalDeposit:", error.response?.data || error.message);
     throw error;
   }
 };
+
 
 exports.paypalOrderSuccess = async (req, res) => {
   const { token, PayerID, orderId } = req.query;
@@ -239,6 +265,7 @@ exports.paypalOrderSuccess = async (req, res) => {
     const secret = process.env.PAYPAL_CLIENT_SECRET;
     const auth = Buffer.from(`${clientId}:${secret}`).toString("base64");
 
+    // Lấy access token từ PayPal
     const tokenResponse = await axios.post(
       "https://api-m.sandbox.paypal.com/v1/oauth2/token",
       new URLSearchParams({ grant_type: "client_credentials" }),
@@ -252,6 +279,7 @@ exports.paypalOrderSuccess = async (req, res) => {
 
     const accessToken = tokenResponse.data.access_token;
 
+    // Capture thanh toán từ PayPal
     const captureResponse = await axios.post(
       `https://api-m.sandbox.paypal.com/v2/checkout/orders/${token}/capture`,
       {},
@@ -263,27 +291,31 @@ exports.paypalOrderSuccess = async (req, res) => {
       }
     );
 
-    if (
-      !captureResponse.data ||
-      captureResponse.data.status !== "COMPLETED"
-    ) {
+    if (!captureResponse.data || captureResponse.data.status !== "COMPLETED") {
       return res.status(400).json({ message: "Payment not completed" });
     }
 
+    // Kiểm tra xem đơn hàng có tồn tại không
     const existingOrder = await Order.findOne({ where: { order_id: orderId } });
 
     if (!existingOrder) {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    // Cập nhật trạng thái đơn hàng thành "PAID"
-    existingOrder.status = "PAID";
+    // Xác định trạng thái thanh toán dựa vào đặt cọc
+    if (existingOrder.prepaid_amount > 0) {
+      existingOrder.status = "PARTIALLY_PAID"; // Thanh toán đặt cọc
+    } else {
+      existingOrder.status = "PAID"; // Thanh toán đầy đủ
+    }
+
     await existingOrder.save();
 
     res.status(200).json({
       message: "Order payment successful",
       orderId,
       transactionId: captureResponse.data.purchase_units[0].payments.captures[0].id,
+      status: existingOrder.status,
     });
   } catch (error) {
     console.error("Error in paypalOrderSuccess:", error.message);
@@ -334,7 +366,6 @@ const getExchangeRate = async () => {
 
     const result = await xml2js.parseStringPromise(response.data, { explicitArray: false });
 
-    console.log("🔍 Dữ liệu JSON nhận được:", JSON.stringify(result, null, 2));
 
     if (!result.ExrateList || !result.ExrateList.Exrate) {
       throw new Error("Dữ liệu tỷ giá không hợp lệ.");
@@ -351,5 +382,22 @@ const getExchangeRate = async () => {
   } catch (error) {
     console.error("❌ Lỗi khi lấy tỷ giá:", error.message);
     throw error;
+  }
+};
+
+exports.sendEmail = async (req, res) => {
+  try {
+    const { email, context } = req.body;
+
+    if (!email || !context) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    await orderService.sendEmail(email, "Xác nhận đơn hàng", "../utils/confirmationEmail.hbs", context);
+
+    return res.status(200).json({ message: "Email sent successfully" });
+  } catch (error) {
+    console.error("Error sending email:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 };

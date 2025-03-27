@@ -58,6 +58,22 @@ exports.getAllOrders = async (page = 1, pageSize = 10) => {
   }
 };
 
+exports.getAllOrderWithNoPaging = async () => {
+  try {
+    const orders = await Order.findAll({
+      include: [
+        {
+          model: OrderItem,
+          as: "order_item",
+        },
+      ]
+    });
+    return orders;
+  } catch (error) {
+    throw new Error("Error fetching all orders: " + error.message);
+  }
+};
+
 
 // Get order by ID
 exports.getOrderById = async (orderId) => {
