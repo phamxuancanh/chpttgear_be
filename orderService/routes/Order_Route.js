@@ -5,6 +5,8 @@ const router = express.Router();
 // Get all orders
 router.get('/', orderController.getAllOrders);
 
+router.get("/all-orders", orderController.getAllOrderWithNoPaging);
+
 // Get order by ID
 router.get('/:orderId', orderController.getOrderById);
 
@@ -13,6 +15,8 @@ router.get('/orders/:userId', orderController.getOrdersByUserId);
 
 // Create a new order
 router.post('/', orderController.createOrder);
+
+router.post('/paypal', orderController.createPaypalDeposit);
 
 // Update an order
 router.put('/:orderId', orderController.updateOrder);
@@ -25,5 +29,8 @@ router.post("/calculate-fee", orderController.getShippingFee);
 router.get("/paypal/cancel", orderController.paypalOrderCancel);
 
 router.get("/paypal/success", orderController.paypalOrderSuccess);
+
+router.post("/send-email", orderController.sendEmail);
+
 
 module.exports = router;

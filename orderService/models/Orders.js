@@ -16,10 +16,11 @@ const Order = sequelize.define(
             allowNull: false,
         },
         status: {
-            type: DataTypes.ENUM("PENDING", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"),
+            type: DataTypes.ENUM("PENDING", "PAID", "SHIPPED", "DELIVERED", "CANCELLED", "PENDING_PAYMENT", "PARTIALLY_PAID"),
             allowNull: false,
             defaultValue: "PENDING",
         },
+
         payment_method: {
             type: DataTypes.ENUM("PAYPAL", "COD"),
             allowNull: false,
@@ -31,6 +32,11 @@ const Order = sequelize.define(
             defaultValue: 0.0,
         },
         shipping_amount: {
+            type: DataTypes.DOUBLE,
+            allowNull: false,
+            defaultValue: 0.0,
+        },
+        prepaid_amount: {
             type: DataTypes.DOUBLE,
             allowNull: false,
             defaultValue: 0.0,
