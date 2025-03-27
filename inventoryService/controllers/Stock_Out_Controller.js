@@ -14,8 +14,8 @@ const getStockOutById = async (req, res) => {
 
 const createStockOut = async (req, res) => {
   console.log("tới đây rồi");
-  console.log(req.body);
-  const data = await stockOutService.createStockOut(req.body);
+  console.log(req.body.data);
+  const data = await stockOutService.createStockOut(req.body.data);
   res.status(201).json(data);
 };
 
@@ -60,12 +60,12 @@ const getStockOutByInventoryId = async (req, res) => {
   }
 };
 
-const getStockInByProductId = async (req, res) => {
+const getStockOutByProductId = async (req, res) => {
   const { product_id } = req.params; // Lấy inventory_id từ params
 
   try {
     // Tìm tất cả các bản ghi stock_in theo inventory_id
-    const stockInRecords = await stockOutService.getStockInByProductId(
+    const stockInRecords = await stockOutService.getStockOutByProductId(
       product_id
     );
 
@@ -94,5 +94,5 @@ module.exports = {
   updateStockOut,
   deleteStockOut,
   getStockOutByInventoryId,
-  getStockInByProductId,
+  getStockOutByProductId,
 };

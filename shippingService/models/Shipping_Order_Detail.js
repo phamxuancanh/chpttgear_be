@@ -15,6 +15,10 @@ const Shipping_Order_Detail = sequelize.define(
       type: DataTypes.UUID,
       allowNull: false,
     },
+    price: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
     quantity: {
       type: DataTypes.INTEGER,
       allowNull: false,
