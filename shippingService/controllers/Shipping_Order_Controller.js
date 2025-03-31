@@ -42,11 +42,19 @@ const getOrderByOrderId = async (req, res) => {
     }
 
     const order = await shippingOrderService.getOrderByOrderId(order_id);
-    return res.status(200).json(order);
+
+    if (!order) {
+      return res
+        .status(404)
+        .json({ message: "Không tìm thấy đơn hàng", status: 404 });
+    }
+
+    return res.status(200).json({ data: order, status: 200 });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 };
+
 const getShippingFee = async (req, res) => {
   console.log("abc");
   try {

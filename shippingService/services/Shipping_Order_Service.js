@@ -196,21 +196,18 @@ const getOrderByOrderId = async (order_id) => {
       include: [
         {
           model: ShippingOrderDetail,
-          as: "orderDetails", // Chú ý alias nếu có
+          as: "shipping_order_detail",
         },
       ],
     });
 
-    if (!order) {
-      throw new Error("Không tìm thấy đơn hàng với order_id này");
-    }
-
-    return order;
+    return order || null; // Nếu không tìm thấy thì trả về null
   } catch (error) {
     console.error("Lỗi khi lấy đơn hàng theo order_id:", error);
-    throw new Error("Không thể lấy đơn hàng");
+    return null; // Trả về null nếu có lỗi thay vì throw error
   }
 };
+
 const calculateShippingFee = async (
   toDistrict,
   toWard,
