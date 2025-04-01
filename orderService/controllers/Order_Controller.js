@@ -337,7 +337,7 @@ exports.paypalOrderCancel = async (req, res) => {
   try {
     // Tìm đơn hàng đang chờ thanh toán
     const existingOrder = await Order.findOne({
-      where: { order_id: orderId, status: "PENDING" },
+      where: { order_id: orderId },
     });
 
     if (!existingOrder) {
