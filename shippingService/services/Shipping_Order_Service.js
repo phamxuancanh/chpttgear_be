@@ -69,6 +69,7 @@
 const { default: axios } = require("axios");
 const ShippingOrder = require("../models/Shipping_Order");
 const ShippingOrderDetail = require("../models/Shipping_Order_Detail");
+const sequelize = require("../configs/database");
 const { Op } = require("sequelize");
 const { v4: uuidv4 } = require("uuid");
 
@@ -91,47 +92,92 @@ const getAllOrders = async () => {
 };
 
 const createOrder = async (orderData) => {
-  console.log("service");
-  console.log("-----------------------------");
-  console.log(orderData.items);
-
+  console.log("bat đầu tạo đơn");
+  const transaction = await sequelize.transaction();
   try {
-    // Tạo ID cho đơn hàng
+    // Gọi API tạo đơn hàng trên GHN
+    const response = await axios.post(
+      "https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create",
+      {
+        payment_type_id: 1,
+        note: orderData.note,
+        required_note: orderData.required_note,
+        to_name: orderData.to_name,
+        to_phone: orderData.to_phone,
+        to_address: orderData.to_address,
+        to_ward_name: orderData.to_ward_name,
+        to_district_name: orderData.to_district_name,
+        to_province_name: orderData.to_province_name,
+        content: orderData.order_name,
+        cod_amount: orderData.cod_amount,
+        length: orderData.length,
+        width: orderData.width,
+        height: orderData.height,
+        weight: orderData.total_weight,
+        service_type_id: 2,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Token: "aa43f060-d157-11ef-b2e4-6ec7c647cc27",
+          ShopId: orderData.ShopId,
+        },
+      }
+    );
+    console.log("Xong tạo don GHN");
+    const shippingData = response.data?.data;
+    if (!shippingData) {
+      console.log("Failed to create shipping order from GHN");
+      throw new Error("Failed to create shipping order from GHN");
+    }
+    console.log(shippingData);
+    // Tạo ID đơn hàng vận chuyển
     const shipping_order_id = uuidv4();
 
-    // Tạo đơn hàng
-    const newOrder = await ShippingOrder.create({
-      shipping_order_id: shipping_order_id,
-      order_id: orderData.order_id,
-      user_id: orderData.user_id,
-      estimated_delivery_date: orderData.estimated_delivery_date,
-      weight: orderData.weight,
-      total_price: orderData.total_price,
-      payment_method: orderData.payment_method,
-      full_address: orderData.full_address,
-      provinceCode: orderData.provinceCode,
-      districtCode: orderData.districtCode,
-      wardCode: orderData.wardCode,
-    });
+    // Lưu đơn hàng vào database
+    const newOrder = await ShippingOrder.create(
+      {
+        shipping_order_id,
+        order_id: orderData.order_id,
+        user_id: orderData.user_id,
+        status: orderData.status,
+        shipping_date: new Date().toISOString(),
+        estimated_delivery_date: shippingData.expected_delivery_time,
+        weight: orderData.total_weight,
+        total_price: orderData.total_price,
+        payment_method: orderData.payment_method,
+        full_address: orderData.to_address,
+        required_note: orderData.required_note,
+        note: orderData.note,
+        order_name: orderData.order_name,
+        total_fee: shippingData.total_fee,
+      },
+      { transaction }
+    );
 
     console.log("Đã tạo đơn hàng:", newOrder);
 
-    // Nếu có danh sách sản phẩm thì tạo từng ShippingOrderDetail riêng lẻ
+    // Nếu có danh sách sản phẩm, tạo Shipping_Order_Detail
     if (orderData.items && orderData.items.length > 0) {
-      for (const item of orderData.items) {
-        const newDetail = await ShippingOrderDetail.create({
-          shipping_order_detail_id: uuidv4(), // Tạo ID duy nhất
-          shipping_order_id: shipping_order_id, // Liên kết với đơn hàng cha
-          product_id: item.product_id,
-          quantity: item.quantity,
-          weight: item.weight,
-        });
-        console.log("Đã tạo chi tiết đơn hàng:", newDetail);
-      }
+      const details = orderData.items.map((item) => ({
+        shipping_order_detail_id: uuidv4(),
+        shipping_order_id,
+        product_id: item.product_id,
+        price: item.price,
+        quantity: item.quantity,
+        weight: item.weight,
+      }));
+
+      await ShippingOrderDetail.bulkCreate(details, { transaction });
+      console.log("Đã tạo chi tiết đơn hàng:", details);
     }
+
+    // Commit transaction
+    await transaction.commit();
 
     return newOrder;
   } catch (error) {
+    await transaction.rollback();
     console.error("Lỗi khi tạo đơn hàng:", error);
     throw new Error("Lỗi khi tạo đơn hàng");
   }
@@ -150,21 +196,18 @@ const getOrderByOrderId = async (order_id) => {
       include: [
         {
           model: ShippingOrderDetail,
-          as: "orderDetails", // Chú ý alias nếu có
+          as: "shipping_order_detail",
         },
       ],
     });
 
-    if (!order) {
-      throw new Error("Không tìm thấy đơn hàng với order_id này");
-    }
-
-    return order;
+    return order || null; // Nếu không tìm thấy thì trả về null
   } catch (error) {
     console.error("Lỗi khi lấy đơn hàng theo order_id:", error);
-    throw new Error("Không thể lấy đơn hàng");
+    return null; // Trả về null nếu có lỗi thay vì throw error
   }
 };
+
 const calculateShippingFee = async (
   toDistrict,
   toWard,

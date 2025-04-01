@@ -3,7 +3,14 @@ const StockIn = require("../models/Stock_In");
 const { v4: uuidv4 } = require("uuid");
 
 const getAllStockIn = async () => {
-  return await StockIn.findAll();
+  return await StockIn.findAll({
+    include: [
+      {
+        model: Inventory,
+        as: "inventory", // Đảm bảo alias đúng với định nghĩa trong association
+      },
+    ],
+  });
 };
 
 const getStockInById = async (id) => {
