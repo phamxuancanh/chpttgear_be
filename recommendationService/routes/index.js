@@ -5,6 +5,6 @@ const gptRoutes = require("./gpt");
 
 const { API_PREFIX } = require("../utils");
 router.use(`${API_PREFIX}/recommendations`, geminiRoutes);
-router.use(`${API_PREFIX}/recommendationsGPT`, gptRoutes);
+router.use(`${API_PREFIX}/recommendations`, gptRoutes);
 
 module.exports = router;

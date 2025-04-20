@@ -24,8 +24,9 @@ const generateContent = async (req, res) => {
                 messages: [
                     {
                         role: "system",
-                        content:
-                            "Bạn là trợ lý chuyên về máy tính và linh kiện. Nếu không biết chắc một thông tin (ví dụ còn hàng hay không), hãy nói rõ là bạn không có dữ liệu thực tế nhưng vẫn trả lời dựa trên giả định hoặc hướng dẫn người dùng liên hệ thêm."
+content: `
+Bạn là trợ lý chuyên sâu về máy tính và linh kiện. 
+Nếu người dùng hỏi về lĩnh vực khác (ví dụ: nấu ăn, du lịch, thời trang...), bạn **phải từ chối** và nói rằng bạn chỉ hỗ trợ về máy tính, phần cứng và công nghệ.`
                     },
                     {
                         role: "user",
@@ -117,16 +118,25 @@ const classifyReview = async (req, res) => {
 };
 const generateDescription = async (req, res) => {
     try {
-        const { specs } = req.body;
+        console.log("🚀 GENERATE DESCRIPTION:", req.body);
+        const specs = req.body.data;
 
         if (!specs) {
             return res.status(400).json({ error: "⚠️ Vui lòng cung cấp thông số kỹ thuật (specs)" });
         }
 
+        // Convert object to readable string
+        const specsString =
+            typeof specs === 'string'
+                ? specs
+                : Object.entries(specs)
+                    .map(([key, value]) => `${key}: ${value}`)
+                    .join(", ");
+
         const prompt = `
-        Bạn là một chuyên gia marketing. Viết mô tả sản phẩm chuyên nghiệp, chuẩn SEO, từ cấu hình máy sau: "${specs}". 
+        Bạn là một chuyên gia marketing. Viết mô tả sản phẩm chuyên nghiệp, chuẩn SEO, từ cấu hình máy sau: "${specsString}". 
         Mô tả rõ hiệu suất, đối tượng sử dụng phù hợp, và nhấn mạnh ưu điểm.
-        Chỉ viết phần mô tả, không viết giới thiệu hay tiêu đề.
+        Chỉ viết phần mô tả, không viết giới thiệu hay tiêu đề. Viết bằng tiếng việt nhé.
         `;
 
         const response = await axios.post(
@@ -152,4 +162,5 @@ const generateDescription = async (req, res) => {
         res.status(500).json({ error: "Không thể tạo mô tả sản phẩm", details: error.message });
     }
 };
+
 module.exports = { generateContent, classifyReview, generateDescription };
