@@ -53,7 +53,11 @@ public class ReviewController {
         Page<IReviewRepository.ReviewProjection> reviews = iReviewRepository.findParentReviewsByProductId(productId, pageable);
         return ResponseEntity.ok(reviews);
     }
-
+    @GetMapping("parent/statistics")
+    public ResponseEntity<IReviewRepository.RatingStatsProjection> getRatingStatistics() {
+        IReviewRepository.RatingStatsProjection stats = iReviewRepository.countReviewRatingGroups();
+        return ResponseEntity.ok(stats);
+    }
     // ✅ Thêm review mới
     @PostMapping()
     public ResponseEntity<String> createReview(@RequestBody Review param) {
