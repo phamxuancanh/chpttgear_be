@@ -174,9 +174,9 @@ services:
     # depends_on:
     #   - kafka # Kafka cần chạy trước
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://dpg-cv3vqo9u0jms73ee72hg-a.singapore-postgres.render.com/chptt_gear_ot8g
+      SPRING_DATASOURCE_URL: jdbc:postgresql://dpg-cvomgt15pdvs73a1oci0-a.singapore-postgres.render.com/mixed_chptt_sjoe
       SPRING_DATASOURCE_USERNAME: sa
-      SPRING_DATASOURCE_PASSWORD: Gyb6QZCn9AqnbP8kLceq6du0fJGpOfeT
+      SPRING_DATASOURCE_PASSWORD: IrYEvfjSgpgtrUQhYGb1jUY6PKX8eVnX
       SPRING_APPLICATION_NAME: productService
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "true"
@@ -194,9 +194,9 @@ services:
     # depends_on:
     #   - kafka # Kafka cần chạy trước
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://dpg-cv3vqo9u0jms73ee72hg-a.singapore-postgres.render.com/chptt_gear_ot8g
+      SPRING_DATASOURCE_URL: jdbc:postgresql://dpg-cvomgt15pdvs73a1oci0-a.singapore-postgres.render.com/mixed_chptt_sjoe
       SPRING_DATASOURCE_USERNAME: sa
-      SPRING_DATASOURCE_PASSWORD: Gyb6QZCn9AqnbP8kLceq6du0fJGpOfeT
+      SPRING_DATASOURCE_PASSWORD: IrYEvfjSgpgtrUQhYGb1jUY6PKX8eVnX
       SPRING_APPLICATION_NAME: cartService
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "true"
@@ -214,9 +214,9 @@ services:
     # depends_on:
     #   - kafka # Kafka cần chạy trước
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://dpg-cv3vqo9u0jms73ee72hg-a.singapore-postgres.render.com/chptt_gear_ot8g
+      SPRING_DATASOURCE_URL: jdbc:postgresql://dpg-cvomgt15pdvs73a1oci0-a.singapore-postgres.render.com/mixed_chptt_sjoe
       SPRING_DATASOURCE_USERNAME: sa
-      SPRING_DATASOURCE_PASSWORD: Gyb6QZCn9AqnbP8kLceq6du0fJGpOfeT
+      SPRING_DATASOURCE_PASSWORD: IrYEvfjSgpgtrUQhYGb1jUY6PKX8eVnX
       SPRING_APPLICATION_NAME: ratingService
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "true"

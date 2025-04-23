@@ -124,17 +124,17 @@ module.exports = (app) => {
   );
 
   // Proxy for Notification Service
-  app.use(
-    `${API_PREFIX}/notifications`,
-    verifyAccessToken,
-    rateLimitAndTimeout("/notifications", RATE_LIMIT, TIMEOUT),
-    createProxyMiddleware({
-      target:
-        process.env.NOTIFICATION_SERVICE_URL + `${API_PREFIX}/notifications`,
-      changeOrigin: true,
-      pathRewrite: { [`^${API_PREFIX}/notifications`]: "" },
-    })
-  );
+  // app.use(
+  //   `${API_PREFIX}/notifications`,
+  //   verifyAccessToken,
+  //   rateLimitAndTimeout("/notifications", RATE_LIMIT, TIMEOUT),
+  //   createProxyMiddleware({
+  //     target:
+  //       process.env.NOTIFICATION_SERVICE_URL + `${API_PREFIX}/notifications`,
+  //     changeOrigin: true,
+  //     pathRewrite: { [`^${API_PREFIX}/notifications`]: "" },
+  //   })
+  // );
   app.use(
     `${API_PREFIX}/recommendations`,
     (req, res, next) => {
