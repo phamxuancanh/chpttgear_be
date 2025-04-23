@@ -490,6 +490,7 @@ const signInOrRegisterWithGoogle = async (req, res) => {
       emailVerified: true,
       score: existingUser.score,
       address: existingUser.address,
+      phone: existingUser.phone,
     };
 
     return res

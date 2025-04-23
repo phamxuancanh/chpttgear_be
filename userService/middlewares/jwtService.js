@@ -1,38 +1,16 @@
 const JWT = require("jsonwebtoken");
 const crypto = require("crypto");
 const { models } = require("../models");
-const client = require("../middlewares/connectRedis");
 
-// const signAccessToken = async (userId) => {
-//   const payload = {
-//     userId,
-//   };
-//   const secret = process.env.ACCESS_TOKEN_SECRET;
-//   const options = {
-//     expiresIn: "5h",
-//   };
-
-//   try {
-//     const token = await new Promise((resolve, reject) => {
-//       JWT.sign(payload, secret, options, (err, token) => {
-//         if (err) return reject(err);
-//         resolve(token);
-//       });
-//     });
-
-//     await client.set(userId.toString(), token, "EX", 18000);
-//     return token;
-//   } catch (error) {
-//     throw new Error("Error signing access token");
-//   }
-// };
+// Tạo access token và lưu vào DB
 const signAccessToken = async (payload) => {
   const secret = process.env.ACCESS_TOKEN_SECRET;
   const options = {
     expiresIn: "5h",
   };
-  console.log("payload", payload);
+
   const userId = payload.userId;
+
   try {
     const token = await new Promise((resolve, reject) => {
       JWT.sign({ userId }, secret, options, (err, token) => {
@@ -40,10 +18,12 @@ const signAccessToken = async (payload) => {
         resolve(token);
       });
     });
-    console.log("userId", userId);
+
     const user = await models.User.findByPk(userId);
+    if (!user) throw new Error("User not found");
+
     user.accessToken = token;
-    user.expireAccessToken = new Date(Date.now() + 5 * 60 * 60 * 1000);
+    user.expireAccessToken = new Date(Date.now() + 5 * 60 * 60 * 1000); // 5h
     await user.save();
 
     return token;
@@ -53,85 +33,79 @@ const signAccessToken = async (payload) => {
   }
 };
 
-const verifyAccessToken = (req, res, next) => {
+// Middleware xác thực access token
+const verifyAccessToken = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
-    return res.status(401).json({ error: { message: "Unauthorized 1" } });
+    return res.status(401).json({ error: { message: "Unauthorized: Missing token" } });
   }
+
   const [scheme, token] = authHeader.split(" ");
-
   if (scheme !== "Bearer" || !token) {
-    return res.status(401).json({ error: { message: "Unauthorized 1" } });
+    return res.status(401).json({ error: { message: "Unauthorized: Invalid format" } });
   }
 
-  JWT.verify(
-    token,
-    process.env.ACCESS_TOKEN_SECRET,
-    { algorithms: ["HS256"] },
-    async (err, payload) => {
-      if (err) {
-        if (err.name === "JsonWebTokenError") {
-          return res.status(401).json({ error: { message: "Unauthorized 2" } });
-        }
-        return res.status(401).json({ error: { message: err.message } });
-      }
-
-      const { userId } = payload;
-      if (!userId) {
-        return res.status(401).json({ error: { message: "Unauthorized 3" } });
-      }
-
-      const user = await models.User.findByPk(userId);
-      if (!user || user.accessToken !== token) {
-        return res.status(401).json({ error: { message: "Unauthorized 4" } });
-      }
-
-      req.userId = userId;
-      req.payload = payload;
-
-      setTimeout(() => {
-        next();
-      }, 100);
+  JWT.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, payload) => {
+    if (err) {
+      return res.status(401).json({ error: { message: "Unauthorized: Invalid token" } });
     }
-  );
+
+    const { userId } = payload;
+    if (!userId) {
+      return res.status(401).json({ error: { message: "Unauthorized: Invalid payload" } });
+    }
+
+    const user = await models.User.findByPk(userId);
+    if (!user || user.accessToken !== token) {
+      return res.status(401).json({ error: { message: "Unauthorized: Token mismatch" } });
+    }
+
+    req.userId = userId;
+    req.payload = payload;
+
+    next();
+  });
 };
 
+// Tạo refresh token và lưu vào DB
 const signRefreshToken = async (userId) => {
-  return new Promise(async (resolve, reject) => {
-    const refreshToken = crypto.randomBytes(64).toString("hex");
+  const refreshToken = crypto.randomBytes(64).toString("hex");
 
-    try {
-      const user = await models.User.findByPk(userId);
-      user.refreshToken = refreshToken;
-      user.expireRefreshToken = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
-      await user.save();
-      resolve(refreshToken);
-    } catch (err) {
-      reject(err);
-    }
-  });
+  try {
+    const user = await models.User.findByPk(userId);
+    if (!user) throw new Error("User not found");
+
+    user.refreshToken = refreshToken;
+    user.expireRefreshToken = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 ngày
+    await user.save();
+
+    return refreshToken;
+  } catch (err) {
+    throw new Error("Error signing refresh token");
+  }
 };
 
-const verifyRefreshToken = (refreshToken) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const user = await models.User.findOne({ where: { refreshToken } });
-      if (!user) {
-        return reject({ status: 403, message: "Token not found" });
-      }
-      const now = new Date();
-      if (user.expireRefreshToken < now) {
-        user.refreshToken = null;
-        user.expireRefreshToken = null;
-        await user.save();
-        return reject({ status: 403, message: "Token has expired" });
-      }
-      resolve(user.id);
-    } catch (err) {
-      reject(err);
+// Xác thực refresh token
+const verifyRefreshToken = async (refreshToken) => {
+  try {
+    const user = await models.User.findOne({ where: { refreshToken } });
+    if (!user) {
+      throw { status: 403, message: "Refresh token not found" };
     }
-  });
+
+    const now = new Date();
+    if (user.expireRefreshToken < now) {
+      user.refreshToken = null;
+      user.expireRefreshToken = null;
+      await user.save();
+      throw { status: 403, message: "Refresh token has expired" };
+    }
+
+    return user.id;
+  } catch (err) {
+    throw err;
+  }
 };
 
 module.exports = {

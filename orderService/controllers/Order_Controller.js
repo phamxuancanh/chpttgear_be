@@ -89,7 +89,7 @@ exports.createOrder = async (req, res) => {
     } else {
       return res.status(400).json({ error: "Invalid payment method" });
     }
-    res.status(201).json(result);
+    res.status(201).json({ order: result });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -337,7 +337,7 @@ exports.paypalOrderCancel = async (req, res) => {
   try {
     // Tìm đơn hàng đang chờ thanh toán
     const existingOrder = await Order.findOne({
-      where: { order_id: orderId, status: "PENDING" },
+      where: { order_id: orderId },
     });
 
     if (!existingOrder) {
