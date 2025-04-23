@@ -55,18 +55,16 @@ services:
     environment:
       USER_SERVICE_URL: http://user:1111
       PRODUCT_SERVICE_URL: http://product:4444
-      INVENTORY_SERVICE_URL: http://inventory:2222
+      INVENTORY_SERVICE_URL: https://inventory.qcapsule.io.vn
       CART_SERVICE_URL: http://cart:4445
       ORDER_SERVICE_URL: http://order:3333
       PAYMENT_SERVICE_URL: http://payment:3334
-      SHIPPING_SERVICE_URL: http://shipping:2223
+      SHIPPING_SERVICE_URL: https://shipping.qcapsule.io.vn
       REVIEW_RATING_SERVICE_URL: http://reviewrating:5555
       NOTIFICATION_SERVICE_URL: http://notification:5556
       RECOMMENDATION_SERVICE_URL: http://recommendation:1112
     depends_on:
       # - kafka
-      - inventory
-      - shipping
       - user
       - order
       - payment
@@ -78,54 +76,6 @@ services:
       - recommendation
     ports:
       - "6868:6868"
-    networks:
-      - app_network
-
-  shipping:
-    build: ./shippingService
-    container_name: shipping
-    environment:
-      POSTGRES_HOST: dpg-cv3vqo9u0jms73ee72hg-a.singapore-postgres.render.com
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: sa
-      POSTGRES_PASSWORD: Gyb6QZCn9AqnbP8kLceq6du0fJGpOfeT
-      POSTGRES_DB: chptt_gear_ot8g
-      KAFKA_BROKER: kafka:9092
-      SHIPPING_UPDATE_QUANTITY_TOPIC: shipping-update-quantity
-      SHIPPING_CREATE_SHIPMENT_TOPIC: shipping-create-shipment
-      SHIPPING_GET_SHIPMENT_STATUS_TOPIC: shipping-get-shipment-status
-      PORT: 2223
-      CLIENT_HOST: http://localhost:3000
-      CLIENT_ID: chptt_gear
-      GROUP_ID: chptt_gear
-    # depends_on:
-    #   - kafka
-    ports:
-      - "2223:2223"
-    networks:
-      - app_network
-
-  inventory:
-    build: ./inventoryService
-    container_name: inventory
-    environment:
-      POSTGRES_HOST: dpg-cv3vqo9u0jms73ee72hg-a.singapore-postgres.render.com
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: sa
-      POSTGRES_PASSWORD: Gyb6QZCn9AqnbP8kLceq6du0fJGpOfeT
-      POSTGRES_DB: chptt_gear_ot8g
-      KAFKA_BROKER: kafka:9092
-      INVENTORY_UPDATE_QUANTITY_TOPIC: inventory-update-quantity
-      INVENTORY_GET_QUANTITY_TOPIC: inventory-get-quantity
-      INVENTORY_INVENTORY_ALERT_TOPIC: inventory-inventory-alert
-      PORT: 2222
-      CLIENT_HOST: http://localhost:3000
-      CLIENT_ID: chptt_gear
-      GROUP_ID: chptt_gear
-    # depends_on:
-    #   - kafka
-    ports:
-      - "2222:2222"
     networks:
       - app_network
 
