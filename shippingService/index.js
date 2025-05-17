@@ -10,7 +10,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: "*",
+    origin: "https://chpttgear-fe.vercel.app/",
   })
 );
 app.use(bodyParser.json());
@@ -19,7 +19,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Middleware
 app.use(express.json());
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.setHeader(
+    "Access-Control-Allow-Origin",
+    "https://chpttgear-fe.vercel.app/"
+  );
   res.setHeader(
     "Access-Control-Allow-Headers",
     "X-Requested-With,content-type, Authorization"
