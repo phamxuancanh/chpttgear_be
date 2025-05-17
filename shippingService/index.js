@@ -10,7 +10,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: "*",
+    origin: "https://chpttgear-fe.vercel.app/",
   })
 );
 app.use(bodyParser.json());
