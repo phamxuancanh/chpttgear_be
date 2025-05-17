@@ -145,6 +145,7 @@ const signIn = async (req, res, next) => {
 const signUp = async (req, res, next) => {
   console.log("SIGN UP");
   try {
+    console.log(req.body);
     const { firstName, lastName, username, email, password } = req.body.data;
     const userByEmail = await models.User.findOne({ where: { email } });
     if (userByEmail) {
@@ -169,7 +170,7 @@ const signUp = async (req, res, next) => {
       { expiresIn: "1h" }
     );
 
-    const confirmationUrl = `http://localhost:${process.env.CLIENT_PORT}/verify/email?token=${emailToken}`;
+    const confirmationUrl = `https://chpttgear-fe.vercel.app/verify/email?token=${emailToken}`;
     // template HTML
     const templatePath = path.join(
       __dirname,
