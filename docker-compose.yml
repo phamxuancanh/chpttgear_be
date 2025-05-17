@@ -120,50 +120,6 @@ services:
     networks:
       - app_network
 
-  order:
-    build: ./orderService
-    container_name: order
-    environment:
-      DB_NAME: mixed_chptt_lth
-      DB_USER: sa
-      DB_PASS: QuCo6aVMvCNfDwcBdD7Be2OJka0rLFiZ
-      DB_HOST: dpg-cuoucjlds78s738ol82g-a.singapore-postgres.render.com
-      DB_PORT: 5432
-      DB_DIALECT: postgres
-      PORT: 3333
-      KAFKA_BROKER: kafka:9092
-      CLIENT_HOST: http://localhost:3000
-      CLIENT_ID: orderService
-      GROUP_ID: order-group
-    # depends_on:
-    #   - kafka
-    ports:
-      - "3333:3333"
-    networks:
-      - app_network
-
-  payment:
-    build: ./paymentService
-    container_name: payment
-    environment:
-      DB_NAME: mixed_chptt_lth
-      DB_USER: sa
-      DB_PASS: QuCo6aVMvCNfDwcBdD7Be2OJka0rLFiZ
-      DB_HOST: dpg-cuoucjlds78s738ol82g-a.singapore-postgres.render.com
-      DB_PORT: 5432
-      DB_DIALECT: postgres
-      PORT: 3334
-      KAFKA_BROKER: kafka:9092
-      CLIENT_HOST: http://localhost:3000
-      CLIENT_ID: payment
-      GROUP_ID: payment-group
-    # depends_on:
-    #   - kafka
-    ports:
-      - "3334:3334"
-    networks:
-      - app_network
-
   product:
     build:
       context: ./productService # Thư mục chứa ứng dụng Java
