@@ -16,7 +16,7 @@ router.get('/orders/:userId', orderController.getOrdersByUserId);
 // Create a new order
 router.post('/', orderController.createOrder);
 
-router.post('/paypal', orderController.createPaypalDeposit);
+router.post('/paypal', orderController.handleCreatePaypalDeposit);
 
 // Update an order
 router.put('/:orderId', orderController.updateOrder);

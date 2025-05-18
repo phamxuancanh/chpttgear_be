@@ -64,12 +64,12 @@ services:
       RECOMMENDATION_SERVICE_URL: https://recommendation.qcapsule.io.vn
     depends_on:
       - kafka
-      - user
+      # - user
       - product
       - cart
       - redis
       - rating
-      - recommendation
+      # - recommendation
     ports:
       - "6868:6868"
     networks:
