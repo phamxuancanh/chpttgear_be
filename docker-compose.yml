@@ -50,26 +50,26 @@ services:
       - app_network
 
   api-gateway:
-    build: ./api-gateway
+    build:
+      context: ./api-gateway # Thư mục chứa ứng dụng Java
+      dockerfile: Dockerfile # Tệp Dockerfile
     container_name: api-gateway
     environment:
       USER_SERVICE_URL: https://user.qcapsule.io.vn
-      PRODUCT_SERVICE_URL: https://product.qcapsule.io.vn
+      PRODUCT_SERVICE_URL: http://product:4444
       INVENTORY_SERVICE_URL: https://inventory.qcapsule.io.vn
-      CART_SERVICE_URL: https://cart.qcapsule.io.vn
+      CART_SERVICE_URL: http://cart:4445
       ORDER_SERVICE_URL: https://order.qcapsule.io.vn/
       PAYMENT_SERVICE_URL: https://payment.qcapsule.io.vn/
       SHIPPING_SERVICE_URL: https://shipping.qcapsule.io.vn
-      REVIEW_RATING_SERVICE_URL: http://reviewrating:5555
+      REVIEW_RATING_SERVICE_URL: http://rating:5555
       RECOMMENDATION_SERVICE_URL: https://recommendation.qcapsule.io.vn
     depends_on:
       - kafka
-      - user
       - product
       - cart
       - redis
       - rating
-      - recommendation
     ports:
       - "6868:6868"
     networks:

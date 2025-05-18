@@ -15,7 +15,7 @@ public class ServiceConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/api/**")
-                        .allowedOrigins("https://chpttgear-fe.vercel.app/")
+                        .allowedOrigins("https://chpttgear-fe.vercel.app")
                         .allowedMethods("PUT", "DELETE", "GET", "POST", "OPTIONS")
                         .allowedHeaders("header1", "header2", "header3")
                         .exposedHeaders("Authorization", "X-Requested-With", "Content-Type")
