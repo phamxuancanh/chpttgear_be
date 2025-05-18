@@ -19,7 +19,7 @@ app.use((req, res, next) => {
 });
 app.use(
   cors({
-    origin: "https://chpttgear-fe.vercel.app",
+    origin: "https://chpttgear-fe.vercel.app/",
     credentials: true,
   })
 );

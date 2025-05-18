@@ -70,28 +70,30 @@ exports.getOrdersByUserId = async (req, res) => {
 
 exports.createOrder = async (req, res) => {
   const orderData = req.body;
-  console.log(orderData)
+
   try {
     let result;
-    if (orderData.payment_method === "PAYPAL") {
-      return await this.createPaypalDeposit(orderData, res);
-    } else if (orderData.payment_method === "COD") {
-      result = await orderService.createOrder(orderData);
-      // const emailContext = {
-      //   orderId: result.order_id,
-      //   orderDate: result.createdAt,
-      //   orderTotal: result.total_amount,
-      //   address: result.houseNumber,
-      //   products: 
-      // };
+    // let approvalUrl; 
 
-      // await orderService.sendEmail(orderData.email, "Xác nhận đơn hàng", "../utils/confirmationEmail.hbs", emailContext);
-    } else {
-      return res.status(400).json({ error: "Invalid payment method" });
-    }
-    res.status(201).json({ order: result });
+    // if (orderData.payment_method === "PAYPAL" ) {
+    //   result = await orderService.createOrder(orderData);
+    //   orderData.order_id = result.order_id;
+    //   approvalUrl = await this.createPaypalDeposit(orderData);
+    // } else if (orderData.payment_method === "COD") {
+    //   result = await orderService.createOrder(orderData);
+    // } else {
+    //   return res.status(400).json({ error: "Invalid payment method" });
+    // }
+    result = await orderService.createOrder(orderData);
+    const response = { order: result };
+    // if (approvalUrl) response.approvalUrl = approvalUrl;
+
+    res.status(201).json(response);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    const message =
+      error?.response?.data?.message || error?.response?.data || error?.message || "Lỗi không xác định";
+    console.error("❌ Lỗi trong createOrder:", message);
+    res.status(500).json({ error: message });
   }
 };
 
@@ -132,125 +134,109 @@ exports.getShippingFee = async (req, res) => {
   }
 };
 
-exports.createPaypalDeposit = async (reqOrData, res) => {
-  const orderData = reqOrData?.body || reqOrData;
+exports.handleCreatePaypalDeposit = async (req, res) => {
+  try {
+    const orderData = req.body;
+
+    if (!orderData || typeof orderData !== "object") {
+      return res.status(400).json({ error: "Dữ liệu đơn hàng không hợp lệ." });
+    }
+
+    const approvalUrl = await this.createPaypalDeposit(orderData);
+
+    if (!approvalUrl) {
+      return res.status(500).json({ error: "Không thể tạo PayPal approval URL." });
+    }
+
+    return res.status(200).json({ approvalUrl });
+  } catch (error) {
+    const message =
+      error?.response?.data?.message || error?.response?.data || error?.message || "Lỗi không xác định";
+    console.error("❌ Lỗi trong handleCreatePaypalDeposit:", message);
+    return res.status(500).json({ error: message });
+  }
+};
+
+exports.createPaypalDeposit = async (orderData) => {
   if (!orderData || typeof orderData !== "object") {
-    throw new Error("Lỗi: Dữ liệu đơn hàng không hợp lệ hoặc bị thiếu.");
+    throw new Error("Dữ liệu đơn hàng không hợp lệ hoặc bị thiếu.");
   }
 
   console.log("📥 Data nhận vào createPaypalDeposit:", orderData);
 
-  try {
-
-    const clientId = process.env.PAYPAL_CLIENT_ID;
-    const secret = process.env.PAYPAL_CLIENT_SECRET;
-    if (!clientId || !secret) {
-      throw new Error("Lỗi: PAYPAL_CLIENT_ID hoặc PAYPAL_CLIENT_SECRET không tồn tại.");
-    }
-
-    const auth = Buffer.from(`${clientId}:${secret}`).toString("base64");
-
-    console.log("🔑 Gọi PayPal để lấy access token...");
-    const tokenResponse = await axios.post(
-      "https://api-m.sandbox.paypal.com/v1/oauth2/token",
-      qs.stringify({ grant_type: "client_credentials" }),
-      {
-        headers: {
-          Authorization: `Basic ${auth}`,
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      }
-    );
-
-    const accessToken = tokenResponse.data.access_token;
-
-    const exchangeRate = await getExchangeRate();
-    if (!exchangeRate || isNaN(exchangeRate)) {
-      throw new Error("Lỗi: Không lấy được tỷ giá USD hợp lệ.");
-    }
-
-    const totalAmountVnd = orderData?.total_amount;
-    const prepaidAmountVnd = orderData?.prepaid_amount || 0;
-    const paymentAmountVnd = orderData.status === "PENDING_PAYMENT" ? prepaidAmountVnd : totalAmountVnd;
-
-    const paymentAmountUsd = (paymentAmountVnd / exchangeRate).toFixed(2).toString();
-
-    const newOrder = await Order.create({
-      user_id: orderData?.user_id,
-      total_amount: totalAmountVnd,
-      shipping_amount: orderData.shipping_amount || 0.0,
-      status: orderData?.status,
-      payment_method: orderData?.payment_method,
-      provinceCode: orderData?.provinceCode,
-      districtCode: orderData?.districtCode,
-      wardCode: orderData?.wardCode,
-      houseNumber: orderData?.houseNumber,
-      prepaid_amount: prepaidAmountVnd,
-    });
-
-    const newPayment = await axios.post(`${process.env.GATEWAY_HOST}/api/v1/payments/`, {
-      order_id: newOrder.order_id,
-      user_id: orderData.user_id,
-      payment_method: "PAYPAL",
-      amount: paymentAmountVnd,
-    });
-
-
-
-    const newTransaction = await axios.post(
-      `${process.env.GATEWAY_HOST}/api/v1/payments/transactions/`,
-      {
-        payment_id: newPayment.data.payment_id,
-        user_id: orderData.user_id,
-        transaction_type: "DEBIT",
-        amount: paymentAmountVnd,
-        status: "INIT",
-      }
-    );
-
-    console.log("🔗 Gửi request tạo đơn hàng PayPal...");
-    const paymentResponse = await axios.post(
-      "https://api-m.sandbox.paypal.com/v2/checkout/orders",
-      {
-        intent: "CAPTURE",
-        purchase_units: [
-          {
-            reference_id: newOrder.order_id,
-            description: `Payment for order ${newOrder.order_id}`,
-            payee: { email_address: process.env.PAYPAL_BUSINESS_EMAIL },
-            amount: {
-              currency_code: "USD",
-              value: paymentAmountUsd.toString(),
-            },
-          },
-        ],
-        application_context: {
-          brand_name: "CHPTT GEAR",
-          landing_page: "BILLING",
-          user_action: "PAY_NOW",
-          return_url: `${process.env.CLIENT_HOST}/paypal/success?orderId=${newOrder.order_id}&transactionId=${newTransaction.data.transaction_id}`,
-          cancel_url: `${process.env.CLIENT_HOST}/paypal/cancel?orderId=${newOrder.order_id}&transactionId=${newTransaction.data.transaction_id}`,
-        },
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    const approvalUrl = paymentResponse.data.links.find((link) => link.rel === "approve")?.href;
-    if (!approvalUrl) {
-      throw new Error("Lỗi: Không tìm thấy URL phê duyệt thanh toán từ PayPal.");
-    }
-
-    return res.status(201).json({ order: newOrder, approvalUrl });
-  } catch (error) {
-    console.error("🚨 Lỗi trong createPaypalDeposit:", error.response?.data || error.message);
-    throw error;
+  const clientId = process.env.PAYPAL_CLIENT_ID;
+  const secret = process.env.PAYPAL_CLIENT_SECRET;
+  if (!clientId || !secret) {
+    throw new Error("PAYPAL_CLIENT_ID hoặc PAYPAL_CLIENT_SECRET không tồn tại.");
   }
+
+  const auth = Buffer.from(`${clientId}:${secret}`).toString("base64");
+
+  const tokenResponse = await axios.post(
+    "https://api-m.sandbox.paypal.com/v1/oauth2/token",
+    qs.stringify({ grant_type: "client_credentials" }),
+    {
+      headers: {
+        Authorization: `Basic ${auth}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    }
+  );
+
+  const accessToken = tokenResponse.data.access_token;
+
+  const exchangeRate = await getExchangeRate();
+  if (!exchangeRate || isNaN(exchangeRate)) {
+    throw new Error("Không lấy được tỷ giá USD hợp lệ.");
+  }
+
+  const totalAmountVnd = orderData?.total_amount;
+  const prepaidAmountVnd = orderData?.prepaid_amount || 0;
+  const paymentAmountVnd =
+    orderData.status === "PENDING_PAYMENT" ? prepaidAmountVnd : totalAmountVnd;
+
+  const paymentAmountUsd = (paymentAmountVnd / exchangeRate).toFixed(2);
+
+  const paymentResponse = await axios.post(
+    "https://api-m.sandbox.paypal.com/v2/checkout/orders",
+    {
+      intent: "CAPTURE",
+      purchase_units: [
+        {
+          reference_id: orderData.order_id,
+          description: `Payment for order ${orderData.order_id}`,
+          payee: { email_address: process.env.PAYPAL_BUSINESS_EMAIL },
+          amount: {
+            currency_code: "USD",
+            value: paymentAmountUsd,
+          },
+        },
+      ],
+      application_context: {
+        brand_name: "CHPTT GEAR",
+        landing_page: "BILLING",
+        user_action: "PAY_NOW",
+        return_url: `${process.env.CLIENT_HOST}/paypal/success?orderId=${orderData.order_id}&transactionId=${orderData.transaction_id}`,
+        cancel_url: `${process.env.CLIENT_HOST}/paypal/cancel?orderId=${orderData.order_id}&transactionId=${orderData.transaction_id}`,
+      },
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  const approvalUrl = paymentResponse.data.links.find((link) => link.rel === "approve")?.href;
+
+  if (!approvalUrl) {
+    throw new Error("Không tìm thấy URL phê duyệt thanh toán từ PayPal.");
+  }
+
+  return approvalUrl;
 };
+
 
 
 exports.paypalOrderSuccess = async (req, res) => {
