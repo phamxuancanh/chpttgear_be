@@ -170,7 +170,7 @@ const signUp = async (req, res, next) => {
       { expiresIn: "1h" }
     );
 
-    const confirmationUrl = `https://chpttgear-fe.vercel.app/verify/email?token=${emailToken}`;
+    const confirmationUrl = `https://chpttgear-fe.vercel.appverify/email?token=${emailToken}`;
     // template HTML
     const templatePath = path.join(
       __dirname,
@@ -224,13 +224,11 @@ const verifyEmail = async (req, res, next) => {
     await user.save();
     const accessToken = await signAccessToken({ userId: user.id });
 
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: "Email verified successfully.",
-        accessToken,
-      });
+    return res.status(200).json({
+      success: true,
+      message: "Email verified successfully.",
+      accessToken,
+    });
   } catch (error) {
     console.log(error);
     if (error.name === "TokenExpiredError") {
@@ -330,13 +328,11 @@ const sendOTP = async (req, res, next) => {
         return res.status(500).json({ message: "Failed to send OTP." });
       } else {
         console.log("Email sent: " + info.response);
-        return res
-          .status(200)
-          .json({
-            success: true,
-            message: "OTP sent successfully.",
-            otpExpire,
-          });
+        return res.status(200).json({
+          success: true,
+          message: "OTP sent successfully.",
+          otpExpire,
+        });
       }
     });
   } catch (error) {
@@ -413,12 +409,10 @@ const resetPassword = async (req, res, next) => {
     }
     const hashPassword = await bcrypt.hash(newPassword, 10);
     await user.update({ password: hashPassword });
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: "Password has been reset successfully.",
-      });
+    return res.status(200).json({
+      success: true,
+      message: "Password has been reset successfully.",
+    });
   } catch (error) {
     next(error);
   }
