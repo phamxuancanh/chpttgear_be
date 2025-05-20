@@ -2,6 +2,8 @@ const { createProxyMiddleware } = require("http-proxy-middleware");
 const rateLimitAndTimeout = require("./rateLimit");
 const verifyAccessToken = require("./authentication");
 const API_PREFIX = require("../utils/utils").API_PREFIX;
+const proxyWithRetry = require('./proxyWithRetry');
+
 module.exports = (app) => {
   const RATE_LIMIT = 1000; // requests per minute
   const TIMEOUT = 10 * 1000; // 10 seconds
@@ -16,125 +18,123 @@ module.exports = (app) => {
     "/verifyToken",
     "/refreshToken",
   ];
+
   app.use(
-    `${API_PREFIX}/users`,
-    (req, res, next) => {
-      const pathWithoutPrefix = req.path.replace(`${API_PREFIX}/users`, "");
-      if (!publicAPIs.includes(pathWithoutPrefix)) {
-        return verifyAccessToken(req, res, next);
-      }
-      next();
-    },
-    rateLimitAndTimeout("/users", RATE_LIMIT, TIMEOUT),
-    createProxyMiddleware({
-      target: process.env.USER_SERVICE_URL + `${API_PREFIX}/users`,
-      changeOrigin: true,
-      pathRewrite: { [`^${API_PREFIX}/users`]: "" },
-      // timeout: TIMEOUT, // Set the timeout for the proxy
-      // proxyTimeout: TIMEOUT, // Set the timeout for the proxy
-    })
-  );
-  app.use(
+  `${API_PREFIX}/users`,
+  (req, res, next) => {
+    const pathWithoutPrefix = req.path.replace(`${API_PREFIX}/users`, "");
+    if (!publicAPIs.includes(pathWithoutPrefix)) {
+      return verifyAccessToken(req, res, next);
+    }
+    next();
+  },
+  rateLimitAndTimeout("/users", RATE_LIMIT, TIMEOUT),
+  proxyWithRetry({
+    target: process.env.USER_SERVICE_URL + `${API_PREFIX}/users`,
+    changeOrigin: true,
+    pathRewrite: { [`^${API_PREFIX}/users`]: "" },
+    retries: 3,        // số lần retry
+    retryDelay: 300    // ms giữa các lần retry
+    // timeout: TIMEOUT, // Nếu muốn timeout ở proxy
+    // proxyTimeout: TIMEOUT,
+  })
+);
+app.use(
     `${API_PREFIX}/products`,
     (req, res, next) => {
       console.log("req.path", req.params);
       const pathWithoutPrefix = req.path.replace(`${API_PREFIX}`, "");
-      // if (!publicAPIs.includes(pathWithoutPrefix)) {
-      //   return verifyAccessToken(req, res, next);
-      // }
       next();
     },
     rateLimitAndTimeout("/products", RATE_LIMIT, TIMEOUT),
-    createProxyMiddleware({
+    proxyWithRetry({
       target: process.env.PRODUCT_SERVICE_URL + `${API_PREFIX}`,
       changeOrigin: true,
       pathRewrite: { [`^${API_PREFIX}`]: "" },
+      retries: 3,
+      retryDelay: 300,
     })
   );
-  // Proxy for Inventory Service
+
+  // INVENTORY
   app.use(
     `${API_PREFIX}/inventory`,
-    // verifyAccessToken,
     rateLimitAndTimeout("/inventory", RATE_LIMIT, TIMEOUT),
-    createProxyMiddleware({
+    proxyWithRetry({
       target: process.env.INVENTORY_SERVICE_URL + `${API_PREFIX}/inventory`,
       changeOrigin: true,
       pathRewrite: { [`^${API_PREFIX}/inventory`]: "" },
+      retries: 3,
+      retryDelay: 300,
     })
   );
 
-  // Proxy for Cart Service
+  // CARTS
   app.use(
     `${API_PREFIX}/carts`,
-    // verifyAccessToken,
     rateLimitAndTimeout("/carts", RATE_LIMIT, TIMEOUT),
-    createProxyMiddleware({
+    proxyWithRetry({
       target: process.env.CART_SERVICE_URL + `${API_PREFIX}/carts`,
       changeOrigin: true,
       pathRewrite: { [`^${API_PREFIX}/carts`]: "" },
+      retries: 3,
+      retryDelay: 300,
     })
   );
 
-  // Proxy for Order Service
+  // ORDERS
   app.use(
     `${API_PREFIX}/orders`,
-    // verifyAccessToken,
     rateLimitAndTimeout("/orders", RATE_LIMIT, TIMEOUT),
-    createProxyMiddleware({
+    proxyWithRetry({
       target: process.env.ORDER_SERVICE_URL + `${API_PREFIX}/orders`,
       changeOrigin: true,
       pathRewrite: { [`^${API_PREFIX}/orders`]: "" },
+      retries: 3,
+      retryDelay: 300,
     })
   );
 
-  // Proxy for Payment Service
+  // PAYMENTS
   app.use(
     `${API_PREFIX}/payments`,
-    // verifyAccessToken,
     rateLimitAndTimeout("/payments", RATE_LIMIT, TIMEOUT),
-    createProxyMiddleware({
+    proxyWithRetry({
       target: process.env.PAYMENT_SERVICE_URL + `${API_PREFIX}/payments`,
       changeOrigin: true,
       pathRewrite: { [`^${API_PREFIX}/payments`]: "" },
+      retries: 3,
+      retryDelay: 300,
     })
   );
 
-  // Proxy for Shipping Service
+  // SHIPPING
   app.use(
     `${API_PREFIX}/shipping`,
-    // verifyAccessToken,
     rateLimitAndTimeout("/shipping", RATE_LIMIT, TIMEOUT),
-    createProxyMiddleware({
+    proxyWithRetry({
       target: process.env.SHIPPING_SERVICE_URL + `${API_PREFIX}/shipping`,
       changeOrigin: true,
       pathRewrite: { [`^${API_PREFIX}/shipping`]: "" },
+      retries: 3,
+      retryDelay: 300,
     })
   );
 
-  // Proxy for Review & Rating Service
+  // REVIEW & RATING
   app.use(
     `${API_PREFIX}/review`,
-    // verifyAccessToken,
     rateLimitAndTimeout("/review", RATE_LIMIT, TIMEOUT),
-    createProxyMiddleware({
+    proxyWithRetry({
       target: process.env.REVIEW_RATING_SERVICE_URL + `${API_PREFIX}/review`,
       changeOrigin: true,
       pathRewrite: { [`^${API_PREFIX}/review`]: "" },
+      retries: 3,
+      retryDelay: 300,
     })
   );
 
-  // Proxy for Notification Service
-  // app.use(
-  //   `${API_PREFIX}/notifications`,
-  //   verifyAccessToken,
-  //   rateLimitAndTimeout("/notifications", RATE_LIMIT, TIMEOUT),
-  //   createProxyMiddleware({
-  //     target:
-  //       process.env.NOTIFICATION_SERVICE_URL + `${API_PREFIX}/notifications`,
-  //     changeOrigin: true,
-  //     pathRewrite: { [`^${API_PREFIX}/notifications`]: "" },
-  //   })
-  // );
+  // RECOMMENDATIONS
   app.use(
     `${API_PREFIX}/recommendations`,
     (req, res, next) => {
@@ -142,10 +142,12 @@ module.exports = (app) => {
       next();
     },
     rateLimitAndTimeout("/recommendations", RATE_LIMIT, TIMEOUT),
-    createProxyMiddleware({
+    proxyWithRetry({
       target: process.env.RECOMMENDATION_SERVICE_URL + `${API_PREFIX}`,
       changeOrigin: true,
       pathRewrite: { [`^${API_PREFIX}`]: "" },
+      retries: 3,
+      retryDelay: 300,
     })
   );
 };
